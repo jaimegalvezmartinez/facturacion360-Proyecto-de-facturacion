@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.0</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>edu.xtd</groupId>
+	<artifactId>facturacion360</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>facturacion360</name>
+	<description>Proeycto web para gestión de facturas online</description>
+	<url />
+	<licenses>
+		<license />
+	</licenses>
+	<developers>
+		<developer />
+	</developers>
+	<scm>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+		<maven.jar.forceCreation>true</maven.jar.forceCreation>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Documentación OpenAPI y Swagger UI -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
+		<!--
+		    Generación del código QR (ISO/IEC 18004:2015, nivel M) exigido por
+		    la Orden HAC/1177/2024. «javase» incluye «core» de forma transitiva.
+		-->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+
+		<!--
+		    Plantilla del PDF. Se usa Thymeleaf y no una cadena construida a
+		    mano en Java a propósito: th:text escapa por defecto, y el visor ya
+		    tuvo tres XSS por interpolar datos del servidor en HTML sin escapar.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<!--
+		    Render del PDF en servidor. OJO: su motor es CSS 2.1, sin flexbox,
+		    sin grid y sin custom properties, así que NO entiende la hoja del
+		    visor (factura-imprimir.css) y el PDF lleva plantilla y estilos
+		    propios. Que no se desincronicen lo vigila FacturaPdfEstilosTests.
+		-->
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-pdfbox</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Herramientas de minificación: disponibles durante el build,
+     excluidas del JAR de la aplicación por su alcance test. -->
+		<dependency>
+			<groupId>com.github.hazendaz</groupId>
+			<artifactId>htmlcompressor</artifactId>
+			<version>2.4.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.helger</groupId>
+			<artifactId>ph-css</artifactId>
+			<version>8.2.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.javascript</groupId>
+			<artifactId>closure-compiler</artifactId>
+			<version>v20260915</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration><argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine></configuration>
+			</plugin>
+			<!-- Ofuscar el JAR antes de que Spring Boot añada sus dependencias. -->
+			<plugin>
+				<groupId>com.github.wvengen</groupId>
+				<artifactId>proguard-maven-plugin</artifactId>
+				<version>2.6.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>proguard</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<proguardVersion>7.4.1</proguardVersion>
+					<injar>${project.build.finalName}.jar</injar>
+					<proguardInclude>${project.basedir}/proguard-rules.pro</proguardInclude>
+					<includeDependency>true</includeDependency>
+					<includeDependencyInjar>false</includeDependencyInjar>
+					<inLibsFilter>!META-INF/versions/**,!module-info.class</inLibsFilter>
+					<libs>
+						<lib>${java.home}/jmods</lib>
+					</libs>
+					<maxMemory>512m</maxMemory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!--
+				Declara la etiqueta @autor, que permite atribuir METODOS concretos dentro de
+				clases compartidas. El @author estandar solo vale en clases e interfaces.
+				placement "tm" = tipos y metodos.
+
+				NO BORRAR sin quitar antes las etiquetas @autor del codigo: sin esta
+				configuracion, javadoc las trata como desconocidas y falla la generacion.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<tags>
+						<tag>
+							<name>autor</name>
+							<placement>tm</placement>
+							<head>Autor:</head>
+						</tag>
+					</tags>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>produccion</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.6.4</version>
+						<executions>
+							<execution>
+								<id>minificar-static</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>buildtools.MinificarStatic</mainClass>
+									<classpathScope>test</classpathScope>
+									<arguments>
+										<argument>
+											${project.build.outputDirectory}/static</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
