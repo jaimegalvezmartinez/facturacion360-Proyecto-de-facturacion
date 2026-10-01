@@ -1,0 +1,278 @@
+/* acceso.css */
+/* Estilos de las dos pantallas que no son la tabla de clientes: la de acceso
+   (login.html) y la de cuenta (cuenta.html). No se toca style.css a
+   propósito: ese lo comparten cinco páginas que funcionan desde antes de que
+   existiera el portal, y meterle reglas de una pantalla nueva obliga a
+   comprobar que no han cambiado de tamaño las cajas de las otras. */
+
+.acceso-fondo {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 45%, #ecfeff 100%);
+}
+
+/* La caja del formulario. El ancho máximo es lo que evita que en una pantalla
+   ancha el formulario quede estirado y los campos larguísimos. */
+.acceso-caja {
+    width: 100%;
+    max-width: 26rem;
+    background: var(--white);
+    border: 1px solid var(--borde-suave);
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+    padding: 2rem 1.75rem;
+}
+
+.acceso-logo {
+    height: 56px;
+    width: auto;
+    display: block;
+    margin: 0 auto 1rem;
+}
+
+.acceso-titulo {
+    font-weight: 700;
+    font-size: 1.35rem;
+    margin-bottom: 0.15rem;
+    color: var(--text-main);
+}
+
+/* El subtítulo es el que explica para qué sirve esta pantalla; en gris para
+   que no compita con el título. */
+.acceso-subtitulo {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+.acceso-campo {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.acceso-campo label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--text-main);
+}
+
+.acceso-campo input {
+    width: 100%;
+    height: var(--alto-control);
+    padding: 0 2.4rem 0 0.85rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--text-main);
+    background: var(--white);
+    border: 1px solid var(--borde-suave);
+    border-radius: 8px;
+}
+
+.acceso-campo input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(71, 118, 247, 0.2);
+}
+
+/* El icono va dentro del campo, a la derecha, y no es un <i> suelto: con
+   pointer-events:none el clic cae en el input de debajo y el foco va allí
+   directo, que es lo que espera quien hace clic en la cajita de la llave. */
+.acceso-campo .fa-solid,
+.acceso-campo .fa-regular {
+    position: absolute;
+    right: 0.85rem;
+    top: 2.15rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.acceso-boton {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 8px;
+    background: var(--secondary-color);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.acceso-boton:hover:not(:disabled) {
+    background: #305cfc;
+}
+
+.acceso-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.acceso-pie {
+    margin-top: 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.acceso-enlace {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.acceso-enlace:hover {
+    color: #305cfc;
+}
+
+/* El aviso de error. hidden y no display:none para que el lector de pantalla
+   lo anuncie en cuanto se le quita el atributo, que es justo cuando aparece. */
+.acceso-error {
+    border: 1px solid var(--borde-borrado);
+    background: #fef2f2;
+    color: #991b1b;
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+}
+
+.acceso-aviso {
+    border: 1px solid #157347;
+    background: #f0fdf4;
+    color: #14532d;
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+}
+
+.acceso-nota {
+    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* ==========================================
+   MI CUENTA (cuenta.html)
+   ========================================== */
+
+/* La insignia de al lado de "Mi cuenta" en el menú. El tamaño va aquí y no en un
+   atributo inline (que es como lo hacen los enlaces de las otras páginas) para que
+   cambiarlo sea tocar una línea y no cinco. El currentColor hace que herede el color
+   del enlace, y así también funciona en el estado:hover sin reglas de más. */
+.insignia-menu {
+    font-size: 0.9rem;
+    color: currentColor;
+    opacity: 0.9;
+}
+
+.insignia-menu:hover {
+    opacity: 1;
+}
+
+/* El ancho máximo va en el contenedor y no en cada caja: así las dos secciones de la
+   página quedan alineadas y con la misma medida sin repetirlo dos veces. */
+.cuenta-zona {
+    max-width: 44rem;
+    margin-top: 2.5rem;
+}
+
+.cuenta-titulo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+.cuenta-caja {
+    background: var(--white);
+    border: 1px solid var(--borde-suave);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(31, 41, 55, 0.05);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.cuenta-subtitulo {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+/* Los datos van en tres columnas que se apilan en móvil. El <dt> en versalitas, que es
+   la convención para una etiqueta y se lee de un vistazo. */
+.cuenta-datos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 0;
+}
+
+.cuenta-dato dt {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.15rem;
+}
+
+.cuenta-dato dd {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.cuenta-nota {
+    margin: 1.25rem 0 0;
+    font-size: 0.82rem;
+    color: #6c757d;
+}
+
+@media (max-width: 576px) {
+    .cuenta-datos {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Lo que solo puede ver un ADMIN (el enlace a "Mi Perfil" del menú y el botón
+   de la papelera en la tabla de clientes). El JavaScript añade esta clase a
+   <body> cuando comprueba que quien está dentro no lo es, y el CSS esconde lo
+   marcado. Es al revés de lo habitual a propósito: si el JavaScript falla o
+   tarda, lo que se ve es el botón de más y no un hueco raro en la tabla. */
+.sin-permiso [data-solo-admin] {
+    display: none !important;
+}
+
+/* El botón "Salir" del menú es un <button> (porque cerrar sesión es un POST que
+   necesita token de seguridad, y eso no lo puede hacer un enlace) pero tiene que
+   verse exactamente igual que los enlaces de al lado. Un <button> no hereda la
+   tipografía del body, así que sin esto saldría en la fuente por defecto del
+   navegador, y con fondo gris. */
+button.nav-link {
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button.nav-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -1,5 +1,8 @@
 import { crearAlerta, crearAvisos } from "./js/notificaciones.js";
 import { motivoDe } from "./js/problema.js";
+// Toda escritura necesita el token de CSRF: sin esta cabecera, Spring rechaza el POST
+// con un 403 antes de que la petición llegue al controlador.
+import { cabecerasConSeguridad } from "./js/seguridad.js";
 import { limpiarCampo, limpiarValidacion, marcarCampo, validar } from "./js/validacion.js";
 
 const RUTA_FACTURAS = "/factura/buscar";
@@ -375,7 +378,9 @@ async function guardarCliente() {
         let nuevoCliente = null;
         try {
             const respuesta = await fetch("/cliente", {
-                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(datos)
+                method: "POST",
+                headers: await cabecerasConSeguridad({ "Content-Type": "application/json" }),
+                body: JSON.stringify(datos)
             });
             if (respuesta.status == 201) {
                 const cliente = await respuesta.json();
@@ -524,7 +529,7 @@ async function guardarFactura() {
             const ruta = editando ? "/factura/" + idFacturaEnEdicion + "/borrador" : RUTA_CREAR_FACTURA;
             const respuesta = await fetch(ruta, {
                 method: editando ? "PUT" : "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await cabecerasConSeguridad({ "Content-Type": "application/json" }),
                 body: JSON.stringify(datosFactura)
             });
 

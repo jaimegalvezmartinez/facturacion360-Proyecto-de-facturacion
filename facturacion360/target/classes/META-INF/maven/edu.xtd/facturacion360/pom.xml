@@ -50,6 +50,17 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!--
+		    Autenticacion y autorizacion del portal. Aporta el filtro de seguridad que
+		    exige sesion iniciada en TODO lo que no sea el login y los estaticos, el
+		    encriptador BCrypt de contrasenas y el resto de la pieza. Es lo unico que
+		    decide si una peticion pasa: los controladores no comprueban nada.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
 		<!-- Documentación OpenAPI y Swagger UI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -107,6 +118,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--
+		    Base de datos en memoria SOLO para los tests: permite levantar el contexto
+		    entero (y con el, la cadena de seguridad) sin depender de un MySQL ajeno.
+		    MySQL sigue siendo el motor real; este no se usa nunca en produccion.
+		-->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<!-- Herramientas de minificación: disponibles durante el build,

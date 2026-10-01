@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi cuenta | Facturación 360</title>
+    <!--
+        Esta página es la parte de la aplicación que está DENTRO del portal: se llega a ella
+        desde el menú, con la sesión ya abierta. Está protegida por el mismo filtro que el
+        resto (si no hay sesión, el servidor manda al login sin llegar a servirla).
+
+        El módulo es "./js/cuenta.js" y NO "./js/api.js", y es a propósito: api.js importa
+        dom.js, que al cargarse busca "#tabla-clientes" y reventaría esta página, que no
+        tiene ninguna tabla. Los dos usan seguridad.js, que no depende de nada.
+    -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+        crossorigin="anonymous">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha384-t1nt8BQoYMLFN5p42tRAtuAAFQaCQODekUVeKKZrEnEyp4H2R0RHFz0KWpmj7i8g"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="acceso.css">
+    <link rel="icon" href="./img/fav.ico" type="image/png">
+    <script type="module" src="js/cuenta.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container">
+
+        <a class="navbar-brand" href="index.html">
+            <img src="./img/finanzas.png"
+                 alt="Logo de Facturación 360"
+                 class="logo">
+            Facturación 360
+        </a>
+
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+
+        <label for="menu-toggle" class="menu-button" aria-label="Abrir menú">
+            <i class="fa-solid fa-bars"></i>
+        </label>
+
+        <ul class="navbar-nav">
+            <li>
+                <a class="nav-link" href="index.html">Inicio</a>
+            </li>
+            <li>
+                <a class="nav-link" href="clientes.html">Clientes</a>
+            </li>
+            <li>
+                <a class="nav-link" href="facturas.html">Facturas</a>
+            </li>
+            <li>
+                <a class="nav-link" href="ayuda.html">Ayuda</a>
+            </li>
+			<br> | <br>
+			<li>
+			    <a class="nav-link d-flex align-items-center" href="perfil.html" data-solo-admin>
+			        <img src="img/emisor.png"
+			             alt="Mi Perfil"
+			             style="
+			                 height: 40px;
+			                 width: 40px;
+			                 border: 2px solid white;
+			                 border-radius: 50%;
+			                 padding: 2px;
+			                 margin-right: 10px;
+			             ">
+			        <span>Mi Perfil</span>
+			    </a>
+			</li>
+            <li>
+                <!--
+                    La insignia va como <i> de Font Awesome y no como <img> por dos motivos:
+                    la del <img> (img/sinfotoperfil.webp) es un avatar gris de 512 px que a
+                    tamaño de menú se ve como una mancha, y un icono que se pinta con una
+                    fuente se ve nítido a cualquier tamaño y con el color del enlace, que
+                    es lo que hace el resto del menú.
+                -->
+                <a class="nav-link active d-flex align-items-center gap-2"
+                   href="cuenta.html" aria-current="page">
+                    <i class="fa-solid fa-user insignia-menu" aria-hidden="true"></i>
+                    <span>Mi cuenta</span>
+                </a>
+            </li>
+            <li>
+                <!--
+                    Un <button> y no un <a>: el cierre de sesión es un POST que necesita
+                    token de seguridad, así que lo tiene que hacer js/sesion.js. Con un
+                    enlace, si ese archivo no llegara a cargarse, al pulsarlo se vería la
+                    pantalla de acceso y se pensaría que la sesión se había cerrado,
+                    cuando seguiría abierta en el servidor.
+                -->
+                <button type="button" class="nav-link" id="salir">
+                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                    Salir
+                </button>
+            </li>
+        </ul>
+
+    </div>
+</nav>
+
+<main class="container cuenta-zona">
+
+    <h1 class="cuenta-titulo">Mi cuenta</h1>
+
+    <!-- Los datos de quién está dentro. Los rellena js/cuenta.js al cargar, leyendo
+         GET /auth/yo. Empieza con el nombre del usuario tapado para que la página no
+         enseñe un hueco vacío mientras contesta el servidor. -->
+    <section class="cuenta-caja" aria-labelledby="titulo-datos">
+        <h2 id="titulo-datos" class="cuenta-subtitulo">Sesión iniciada</h2>
+        <dl class="cuenta-datos">
+            <div class="cuenta-dato">
+                <dt>Usuario</dt>
+                <dd id="dato-usuario">…</dd>
+            </div>
+            <div class="cuenta-dato">
+                <dt>Nombre</dt>
+                <dd id="dato-nombre">…</dd>
+            </div>
+            <div class="cuenta-dato">
+                <dt>Perfil</dt>
+                <dd id="dato-rol">…</dd>
+            </div>
+        </dl>
+        <p class="cuenta-nota">
+            Los datos de la empresa (los que salen impresos en las facturas) se cambian en
+            <a href="perfil.html">Mi Perfil</a>. Para cambiar el usuario con el que entras
+            hace falta un administrador y acceso a la base de datos.
+        </p>
+    </section>
+
+    <section class="cuenta-caja" aria-labelledby="titulo-clave">
+        <h2 id="titulo-clave" class="cuenta-subtitulo">Cambiar la contraseña</h2>
+
+        <p id="aviso-error" class="acceso-error" role="alert" hidden></p>
+        <p id="aviso-ok" class="acceso-aviso" role="status" hidden></p>
+
+        <form id="formulario-clave" novalidate>
+
+            <div class="acceso-campo">
+                <label for="clave-actual">Contraseña actual</label>
+                <input type="password" id="clave-actual" name="claveActual"
+                       autocomplete="current-password"
+                       maxlength="200" required>
+                <i class="fa-solid fa-key" aria-hidden="true"></i>
+            </div>
+
+            <div class="acceso-campo">
+                <label for="clave-nueva">Contraseña nueva</label>
+                <input type="password" id="clave-nueva" name="nueva"
+                       autocomplete="new-password"
+                       minlength="8" maxlength="200" required>
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            </div>
+
+            <!--
+                La segunda casilla es la misma contraseña otra vez. Es un poco molesto, pero
+                evita el error más común al cambiar una: teclear dos veces lo mismo sin
+                darse cuenta y quedarse fuera de la cuenta.
+            -->
+            <div class="acceso-campo">
+                <label for="clave-nueva-repetida">Repite la contraseña nueva</label>
+                <input type="password" id="clave-nueva-repetida" name="nuevaRepetida"
+                       autocomplete="new-password"
+                       minlength="8" maxlength="200" required>
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            </div>
+
+            <button type="submit" id="boton-guardar" class="acceso-boton">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Guardar contraseña
+            </button>
+        </form>
+
+        <p class="cuenta-nota">
+            Mínimo 8 caracteres. Da igual que sean feos: lo que hace fuerte una contraseña es
+            la longitud, no las mayúsculas y los símbolos. Y no la reutilices de otro sitio.
+        </p>
+    </section>
+
+</main>
+
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container text-center">
+        <p>&copy; 2026 Facturación 360. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

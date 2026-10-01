@@ -7,6 +7,10 @@
  */
 
 import { pantallaCarga } from "./dom.js";
+// El token de CSRF y el salto al login viven en seguridad.js y no aquí: sesion.js y
+// login.js los necesitan también, y api.js arrastra dom.js, que reventaría en las
+// páginas sin tabla de clientes.
+import { irAlLogin, tokenDeSeguridad } from "./seguridad.js";
 
 // Y este cuenta TODAS las peticiones, no solo los listados: es el del velo de carga.
 // Son dos contadores a propósito y no hay que unificarlos: listadosEnVuelo marca el aria-busy
@@ -51,6 +55,13 @@ export async function pedirJson(canal, url) {
 
         // fetch NO lanza error con códigos 4xx/5xx: hay que comprobarlo a mano.
         if (!respuesta.ok) {
+
+            // Un 401 aquí solo puede significar una cosa, y no es un fallo de esta
+            // petición: la sesión ha caducado o alguien la cerró en otra pestaña.
+            if (respuesta.status === 401) {
+                irAlLogin();
+            }
+
             const error = new Error(`El servidor respondió ${respuesta.status}`);
 
             // El código va aparte del mensaje porque hay quien necesita distinguirlos: un 404
@@ -100,12 +111,21 @@ export async function enviarJson(canal, metodo, url, cuerpo) {
     peticionesEnVuelo[canal] = controlador;
 
     try {
+        // El token se pide ANTES del fetch y no en la misma llamada: si se pidiera dentro, el
+        // propio POST se lanzaría sin él y Spring lo rechazaría con un 403.
+        const csrf = await tokenDeSeguridad();
+
         const respuesta = await fetch(url, {
             method: metodo,
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", [csrf.cabecera]: csrf.token },
             body: JSON.stringify(cuerpo),
             signal: controlador.signal,
         });
+
+        // Igual que en pedirJson: el 401 aquí es la sesión, no la operación.
+        if (respuesta.status === 401) {
+            irAlLogin();
+        }
 
         // El codigo Y los errores por campo. Antes se devolvia solo el codigo y el cuerpo
         // se tiraba, asi que un 400 solo podia contarse como "revisa los campos marcados",

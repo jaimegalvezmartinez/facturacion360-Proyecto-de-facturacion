@@ -1,0 +1,218 @@
+# Portal de acceso (login)
+
+Cómo se entra en Facturación 360, quién puede hacer qué, y qué hay que mirar antes de
+dejar la aplicación en un servidor de verdad.
+
+---
+
+## 1. Puesta en marcha
+
+### 1.1 La tabla de usuarios
+
+La tabla `usuarios` es nueva y es la que decide quién entra. Hay dos formas de crearla:
+
+| Situación | Qué cargar |
+|---|---|
+| Base de datos nueva, desde cero | `docu/backupFacturacion360v4.sql` (el esquema completo) |
+| Base de datos ya en el v3, con datos que no quieres tocar | `docu/migracion-usuarios.sql` |
+
+La migración no hace `DROP TABLE` de nada: solo crea `usuarios` y mete las dos cuentas
+iniciales.
+
+### 1.2 Las dos cuentas que vienen puestas
+
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `admin` | `CambiarYa.2026` | ADMIN |
+| `datos` | `CambiarYa.2026` | USUARIO |
+
+**Hay que cambiar esa contraseña antes de que la aplicación se pueda ver desde fuera.** En la
+base de datos no está la contraseña: está su hash BCrypt, así que cambiar una contraseña
+consiste en generar el hash de la nueva y hacer un `UPDATE`:
+
+```sql
+UPDATE usuarios SET clave_hash = '<hash nuevo>' WHERE usuario = 'admin';
+```
+
+Para generar un hash:
+
+```java
+new BCryptPasswordEncoder().encode("la contraseña nueva");
+```
+
+Dos avisos sobre esto:
+
+- BCrypt lleva sal, así que **nunca devuelve dos hashes iguales para la misma contraseña**.
+  Para comprobar si una contraseña es la correcta hay que usar `PasswordEncoder.matches()`, no
+  comparar las cadenas.
+- Lo más fácil para cambiar la de un usuario es crear la cuenta nueva desde la pantalla de
+  registro (que hashea lo que se teclea) y leer el valor de la fila.
+
+### 1.3 Arrancar
+
+Igual que siempre. Al abrir la aplicación sin sesión, cualquier dirección lleva a
+`login.html`.
+
+---
+
+## 2. Qué se puede ver sin iniciar sesión
+
+Solo tres cosas, y están marcadas como abiertas en `ConfiguracionSeguridad`:
+
+- `login.html` (y su JavaScript y su CSS)
+- Los estáticos: `js/**`, `css/**`, `img/**` y las hojas sueltas
+- `POST /auth/login`, `POST /auth/registro` y `GET /auth/csrf`
+
+**Todo lo demás exige sesión**: las cinco pantallas (inicio, clientes, facturas, perfil y
+ayuda), la API entera (`/cliente`, `/factura`, `/emisor`, `/verifactu`), los PDF, y también
+la documentación de Swagger.
+
+La regla general es `anyRequest().authenticated()`: una pantalla nueva nace protegida, y para
+abrirla hay que hacer algo a propósito. Ese es el motivo de que la lista de lo abierto sea
+corta y la de lo cerrado sea "todo lo demás".
+
+### Qué pasa según quién llama
+
+| Quién llama | Sin sesión | Con sesión |
+|---|---|---|
+| El navegador abriendo una página | 302 a `login.html` | La página |
+| El JavaScript llamando por `fetch` | 401 con un `ProblemDetail` | Lo que sea |
+
+Las dos respuestas de la API son `ProblemDetail` (RFC 9457), el mismo formato que usa el
+resto de errores del proyecto, con el motivo en `detail`.
+
+---
+
+## 3. Los dos roles
+
+| | ADMIN | USUARIO |
+|---|:---:|:---:|
+| Consultar clientes, facturas, listados | Sí | Sí |
+| Crear y modificar clientes | Sí | Sí |
+| Crear y modificar facturas | Sí | Sí |
+| Ver el perfil de la empresa | Sí | Sí |
+| **Borrar clientes** (`DELETE /cliente/{id}`) | Sí | **No** (403) |
+| **Cambiar los datos del emisor** (`PUT /emisor`) | Sí | **No** (403) |
+
+Las dos operaciones restringidas son las que no se pueden deshacer: borrar un cliente, y tocar
+la razón social, el NIF y el domicilio que salen impresos en las facturas y dentro del QR de
+la AEAT.
+
+En la pantalla, un USUARIO no ve el enlace "Mi Perfil" ni el botón de la papelera. Eso es
+comodidad, **no protección**: si alguien quita el `data-solo-admin` con el inspector, el botón
+vuelve a aparecer y el servidor lo rechaza con un 403.
+
+### Dar de alta cuentas
+
+- Desde la propia pantalla de acceso, con el botón "Crear cuenta" (`POST /auth/registro`).
+  **Todas las cuentas nuevas nacen con rol USUARIO**, porque ese endpoint no lee ningún campo
+  de rol: no hay forma de pedir un ADMIN por la API ni por error ni a propósito.
+- Con un `UPDATE` para cambiar un rol:
+  ```sql
+  UPDATE usuarios SET rol = 'ADMIN' WHERE usuario = 'nombre';
+  ```
+
+### Cambiar tu propia contraseña
+
+Desde el menú de la aplicación, en **Mi cuenta** (`cuenta.html`), que está dentro de la
+aplicación y no en la pantalla de acceso: se llega con la sesión ya abierta. La pantalla pide
+la contraseña actual, la nueva y la nueva repetida.
+
+Lo que hay detrás es `PUT /auth/clave`:
+
+```json
+{ "claveActual": "...", "nueva": "..." }
+```
+
+Cuatro cosas sobre ese endpoint:
+
+1. **Pide la contraseña actual.** Sin ella, tener una sesión abierta —o sentarse delante de un
+   navegador que lo tenía abierto— bastaría para quedarse con la cuenta para siempre.
+2. **Solo cambia la contraseña de quien tiene la sesión.** No hay ningún campo de usuario en
+   el cuerpo de la petición: el que se cambia se saca de la autenticación. Cambiar la de otro
+   es cosa de un administrador con acceso a la base de datos, y a mano.
+3. **Lo que se guarda es un hash BCrypt nuevo**, con su sal nueva. La contraseña en claro no
+   sale del proceso.
+4. **La sesión no se cae** tras el cambio, pero se queda con las credenciales nuevas dentro:
+   si se dejaran las viejas, en la sesión quedaría un hash que ya no corresponde con nada.
+
+Un 400 con `"La contraseña actual no es correcta"` no es un 401 a propósito: la sesión es
+válida, lo que está mal es lo que se ha enviado.
+
+---
+
+## 4. El interruptor del registro
+
+```properties
+app.seguridad.registro-abierto=false
+```
+
+Con `false` desaparece el botón "Crear una" de la pantalla de acceso y
+`POST /auth/registro` responde 403. **Es lo primero que hay que bajar cuando la aplicación
+salga del aula.** Con el registro abierto, cualquiera que llegue a la pantalla puede crearse
+una cuenta (con permisos de USUARIO) sin que nadie se entere.
+
+---
+
+## 5. Los tests
+
+```bash
+mvn test
+```
+
+Dos clases, y levantan la aplicación entera contra una base de datos H2 en memoria (la real
+sigue siendo MySQL; H2 solo se usa en test):
+
+- `AccesoSinSesionTests` — la puerta: qué se puede ver sin sesión, qué salta a `login`, qué
+  devuelve un 403, y que sin token de CSRF no se escribe nada.
+- `AutenticacionTests` — la llave: entrar bien y entrar mal, cuentas desactivadas, el registro,
+  que no se pueda pedir el rol ADMIN, el cierre de sesión y el cambio de contraseña (que se
+  guarda hasheada, que la vieja deja de servir y que la actual equivocada no cambia nada).
+
+Ninguno falsea la autenticación con mocks: los tests de la puerta hacen el login de verdad
+contra `POST /auth/login`, porque si el login se rompiera tienen que enterarse.
+
+---
+
+## 6. Lo que hay que mirar antes de publicar esto
+
+Ninguna de estas cosas la arregla el código, y las cuatro se suelen dejar sin hacer en un
+proyecto de prácticas:
+
+1. **HTTPS.** La contraseña viaja en el cuerpo de la petición en claro. Por HTTP, cualquiera
+   que esté en la red la lee tal cual.
+2. **`server.servlet.session.cookie.secure=true`** cuando haya TLS. Ahora está en `false`
+   porque en local es `http` y con la cookie como solo-HTTPS no se guardaría nunca: nadie
+   podría entrar.
+3. **Cambiar la contraseña de `admin` y de `datos`.**
+4. **`app.seguridad.registro-abierto=false`.**
+
+Y una cosa buena que ya viene hecha: la cookie de sesión es `HttpOnly`, así que el JavaScript
+de la aplicación no puede leerla, y las contraseñas se guardan hasheadas con BCrypt, que es
+lento a propósito y lleva sal propia.
+
+---
+
+## 7. Dónde está cada cosa
+
+```
+seguridad/ConfiguracionSeguridad.java    Qué se puede ver sin entrar, qué necesita ser ADMIN,
+                                        el codificador de contraseñas y la cookie de sesión
+seguridad/UsuariosDetailsService.java    Traduce una fila de usuarios a lo que Spring
+                                        Security llama "usuario"
+seguridad/PuntoEntradaNoAutenticada.java Qué se responde cuando no hay sesión (401 o login)
+seguridad/AccesoDenegado.java            Qué se responde cuando hay sesión pero falta permiso
+controller/AuthController.java           /auth/login, /auth/registro, /auth/yo, /auth/csrf
+                                        y /auth/clave (cambio de contraseña)
+service/UsuarioService.java              Da de alta cuentas (hashea la contraseña)
+repository/UsuarioRepositoryJdbcImpl.java  Acceso a la tabla usuarios
+static/login.html, static/js/login.js    La pantalla de acceso y su alta
+static/cuenta.html, static/js/cuenta.js  "Mi cuenta": datos de la sesión y cambio de clave
+static/js/seguridad.js                   Token de CSRF, salto al login y cierre de sesión
+static/js/sesion.js                      El botón "Salir" y esconder lo de ADMIN
+```
+
+El cierre de sesión (`POST /auth/logout`) **no** está en `AuthController`: lo pone Spring
+Security en su propio filtro, porque cerrar bien una sesión no es solo borrarla, es también
+rotar el identificador y anular la autenticación guardada. Está declarado en
+`ConfiguracionSeguridad`.

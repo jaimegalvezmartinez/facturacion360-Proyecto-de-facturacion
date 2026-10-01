@@ -6,7 +6,7 @@
  * <h2>Mapa de modulos</h2>
  *
  * <pre>
- *   capa 0   config   dom   estado                        sin dependencias
+ *   capa 0   config   dom   estado   seguridad          sin dependencias
  *   capa 1   api   avisos   foco   fila   notificaciones   problema   validacion
  *   capa 2   formulario
  *   capa 3   dialogo   paneles
@@ -22,6 +22,12 @@
  * garantiza que no haya ciclos. <strong>Se mantiene a mano</strong>: no hay ninguna
  * comprobacion automatica que la verifique, asi que quien anada un import es quien tiene
  * que mirar el mapa.</p>
+ *
+ * <p>La capa 0 tiene un miembro nuevo, <code>seguridad</code>, y no es por una cuestion de
+ * estilo: <code>api.js</code> (capa 1) lo necesita para el token de CSRF, pero
+ * <code>sesion.js</code> —que se carga en facturas, perfil, index y ayuda, donde no hay
+ * tabla de clientes— tambien. Si viviera en api.js, se arrastraría dom.js, que al cargarse
+ * busca "#tabla-clientes" y reventaría la página entera en esas cuatro pantallas.</p>
  *
  * <p>Queda una excepcion conocida: <code>avisos</code> importa de <code>notificaciones</code>
  * y las dos estan en la capa 1. No sube a <code>notificaciones</code> a capa 0 porque tiene
