@@ -13,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.transaction.TransactionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,6 +29,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import edu.xtd.facturacion360.repository.ClienteRepository;
 import edu.xtd.facturacion360.repository.FacturaRepository;
+import edu.xtd.facturacion360.repository.UsuarioRepository;
+import edu.xtd.facturacion360.service.UsuarioService;
 
 /**
  * El único sitio donde se decide qué responde la API cuando algo sale mal.
@@ -125,6 +130,96 @@ public class ManejadorExcepciones extends ResponseEntityExceptionHandler {
 			FacturaRepository.ClienteInexistenteException excepcion) {
 		log.warn("Se ha intentado facturar a un cliente que ya no existe");
 		return problema(HttpStatus.CONFLICT, excepcion.getMessage());
+	}
+
+	/**
+	 * El acceso al portal con un usuario o una contraseña que no cuadran.
+	 *
+	 * <p>Un 401, y un motivo que no dice cuál de las dos cosas falló. Es la diferencia entre
+	 * «tu contraseña está mal» y «ese usuario no está dado de alta»: la primera ayuda a quien
+	 * se ha equivocado, y la segunda le dice a quien está probando nombres que ese nombre
+	 * existe. Aquí no se da ese dato, y el motivo es el mismo en los dos casos.</p>
+	 *
+	 * <p>Sin este manejador, la excepción caería en el de abajo y saldría como un 500, que
+	 * además de no ser verdad le diría a quien está probando que el fallo está en el
+	 * servidor.</p>
+	 *
+	 * @param excepcion el rechazo de Spring Security
+	 * @return 401 con un motivo neutro
+	 */
+	@ExceptionHandler(BadCredentialsException.class)
+	public ProblemDetail gestionarCredenciales(BadCredentialsException excepcion) {
+		log.warn("Intento de acceso rechazado: usuario o contraseña incorrectos");
+		return problema(HttpStatus.UNAUTHORIZED, "El usuario o la contraseña no son correctos");
+	}
+
+	/**
+	 * El acceso a una cuenta que existe pero está desactivada.
+	 *
+	 * <p>También 401 con el mismo motivo neutro que una contraseña incorrecta, y por el mismo
+	 * motivo: si se dijera «esa cuenta está desactivada», el nombre quedaría confirmado. El
+	 * log sí lo dice, que es donde hace falta.</p>
+	 *
+	 * @param excepcion el rechazo de Spring Security
+	 * @return 401 con un motivo neutro
+	 */
+	@ExceptionHandler(DisabledException.class)
+	public ProblemDetail gestionarCuentaDesactivada(DisabledException excepcion) {
+		log.warn("Intento de acceso a una cuenta desactivada");
+		return problema(HttpStatus.UNAUTHORIZED, "El usuario o la contraseña no son correctos");
+	}
+
+	/**
+	 * Un usuario con el mismo nombre intenta darse de alta dos veces.
+	 *
+	 * <p>Va antes que el manejador genérico de duplicados, que también responde 409, pero sin
+	 * decir qué campo ha chocado. Aquí sí se dice.</p>
+	 *
+	 * @param excepcion la colisión, ya traducida por el repositorio
+	 * @return 409 nombrando el usuario
+	 */
+	@ExceptionHandler(UsuarioRepository.UsuarioDuplicadoException.class)
+	public ProblemDetail gestionarUsuarioDuplicado(
+			UsuarioRepository.UsuarioDuplicadoException excepcion) {
+		log.warn("Alta de usuario repetida");
+		return problema(HttpStatus.CONFLICT, excepcion.getMessage());
+	}
+
+	/**
+	 * Quién está dentro no tiene permiso para lo que pide.
+	 *
+	 * <p>403 y no 401: la sesión existe, lo que no es permiso suficiente. Casi nunca llega
+	 * aquí — las reglas de rol están en la cadena de seguridad y las resuelve
+	 * {@code AccesoDenegado}— pero un {@code @PreAuthorize} en un servicio sí lanzaría esta
+	 * excepción dentro del controlador, y sin este manejador caería en el de abajo y saldría
+	 * como 500.</p>
+	 *
+	 * @param excepcion el rechazo
+	 * @return 403 con un motivo neutro
+	 */
+	@ExceptionHandler(AccessDeniedException.class)
+	public ProblemDetail gestionarAccesoDenegado(AccessDeniedException excepcion) {
+		log.warn("Acceso denegado: {}", excepcion.getMessage());
+		return problema(HttpStatus.FORBIDDEN,
+				"No tienes permiso para hacer esta operación");
+	}
+
+	/**
+	 * Un cambio de contraseña con la contraseña actual equivocada.
+	 *
+	 * <p>400 y no 401: la sesión es válida (si no, la petición ni siquiera habría llegado al
+	 * servicio), lo que está mal es lo que se ha enviado. Un 401 aquí mandaría al login, que
+	 * sería desconcertante, porque en el login la contraseña que se teclea sí es la
+	 * correcta.</p>
+	 *
+	 * @param excepcion el rechazo del servicio, ya traducido
+	 * @return 400 diciendo que la actual no cuadra
+	 */
+	@ExceptionHandler(UsuarioService.ClaveActualIncorrectaException.class)
+	public ProblemDetail gestionarClaveActualIncorrecta(
+			UsuarioService.ClaveActualIncorrectaException excepcion) {
+		log.warn("Cambio de contraseña rechazado: la contraseña actual no es la correcta");
+		return problema(HttpStatus.BAD_REQUEST, excepcion.getMessage());
 	}
 
 	/**

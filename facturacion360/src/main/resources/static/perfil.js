@@ -1,5 +1,7 @@
 import { crearAvisos } from './js/notificaciones.js';
 import { motivoDe } from './js/problema.js';
+// El PUT del emisor también necesita el token de CSRF.
+import { cabecerasConSeguridad } from './js/seguridad.js';
 import { limpiarValidacion, validar } from './js/validacion.js';
 
 // Los avisos de esta pantalla. El comportamiento —cuándo se borra uno, cómo se lee en alto—
@@ -379,6 +381,10 @@ async function guardarEmisor() {
             EMISOR_URL + "/con-imagen",
             {
                 method: "PUT",
+                // El Content-Type NO se pone a mano: lo tiene que generar el navegador
+                // para que incluya el "boundary" del multipart. Solo se añade la cabecera
+                // del token de CSRF, que es lo que Spring exige en toda escritura.
+                headers: await cabecerasConSeguridad(),
                 body: formData
             }
         );

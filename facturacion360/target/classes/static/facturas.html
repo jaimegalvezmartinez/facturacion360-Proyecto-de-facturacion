@@ -14,6 +14,7 @@
     <!-- Icono que aparece en la pestaña del navegador. -->
     <link rel="icon" href="./img/fav.ico" type="image/x-icon">
 	<script type="module" src="facturas.js"></script>
+<script type="module" src="js/sesion.js"></script>
 </head>
 <body>
 <nav class="navbar">
@@ -47,7 +48,7 @@
             </li>
 			<br> | <br>
 					<li>
-					      <a class="nav-link d-flex align-items-center" href="perfil.html">
+					      <a class="nav-link d-flex align-items-center" href="perfil.html" data-solo-admin>
 					          <img src="img/emisor.png"
 					               alt="Mi Perfil"
 					               style="
@@ -60,7 +61,35 @@
 					               ">
 					          <span>Mi Perfil</span>
 					      </a>
-					  </li>
+					  					  </li>
+										  <li>
+										   <!--
+										    La insignia va como <i> de Font Awesome y no como <img> por dos motivos:
+										    la del <img> (img/sinfotoperfil.webp) es un avatar gris de 512 px que a
+										    tamaño de menú se ve como una mancha, y un icono que se pinta con una
+										    fuente se ve nítido a cualquier tamaño y con el color del enlace, que
+										    es lo que hace el resto del menú.
+										   -->
+										  <a class="nav-link d-flex align-items-center gap-2"
+										   href="cuenta.html" aria-current="page">
+										   <i class="fa-solid fa-user insignia-menu" aria-hidden="true"></i>
+										   <span>Mi cuenta</span>
+										  </a>
+
+                    <li>
+                        <!--
+                            Un <button> y no un <a>: el cierre de sesión es un POST que
+                            necesita token de seguridad, así que lo tiene que hacer
+                            js/sesion.js. Con un enlace, si ese archivo no llegara a
+                            cargarse, al pulsarlo se vería la pantalla de acceso y se
+                            pensaría que la sesión se había cerrado, cuando seguiría
+                            abierta en el servidor.
+                        -->
+                        <button type="button" class="nav-link" id="salir">
+                            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                            Salir
+                        </button>
+                    </li>
         </ul>
 
     </div>

@@ -29,7 +29,7 @@
 <!-- type="module" en vez de defer: los módulos ES ya se cargan aplazados por
      definición, y además resuelven sus propias dependencias. Solo se carga el punto
      de entrada; los otros diecisiete los trae él por sus import. -->
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js"></script><script type="module" src="js/sesion.js"></script>
 </head>
 <body>
 
@@ -69,7 +69,7 @@
             </li>
 			<br> | <br>
 					<li>
-					      <a class="nav-link d-flex align-items-center" href="perfil.html">
+					      <a class="nav-link d-flex align-items-center" href="perfil.html" data-solo-admin>
 					          <img src="img/emisor.png"
 					               alt="Mi Perfil"
 					               style="
@@ -82,7 +82,34 @@
 					               ">
 					          <span>Mi Perfil</span>
 					      </a>
-					  </li>
+					  					  </li>
+										  <li>
+										   <!--
+										    La insignia va como <i> de Font Awesome y no como <img> por dos motivos:
+										    la del <img> (img/sinfotoperfil.webp) es un avatar gris de 512 px que a
+										    tamaño de menú se ve como una mancha, y un icono que se pinta con una
+										    fuente se ve nítido a cualquier tamaño y con el color del enlace, que
+										    es lo que hace el resto del menú.
+										   -->
+										  <a class="nav-link d-flex align-items-center gap-2"
+										   href="cuenta.html" aria-current="page">
+										   <i class="fa-solid fa-user insignia-menu" aria-hidden="true"></i>
+										   <span>Mi cuenta</span>
+										  </a>
+                    <li>
+                        <!--
+                            Un <button> y no un <a>: el cierre de sesión es un POST que
+                            necesita token de seguridad, así que lo tiene que hacer
+                            js/sesion.js. Con un enlace, si ese archivo no llegara a
+                            cargarse, al pulsarlo se vería la pantalla de acceso y se
+                            pensaría que la sesión se había cerrado, cuando seguiría
+                            abierta en el servidor.
+                        -->
+                        <button type="button" class="nav-link" id="salir">
+                            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                            Salir
+                        </button>
+                    </li>
         </ul>
 
     </div>
@@ -295,7 +322,12 @@
 						aria-label="Editar cliente" aria-expanded="false">
 						<i class="fa-solid fa-pencil" aria-hidden="true"></i>
 					</button>
+					<!-- data-solo-admin: borrar un cliente solo puede hacerlo un ADMIN, así que
+					     el botón se esconde para los demás. Lo esconde el CSS cuando
+					     js/sesion.js encuentra a alguien sin ese rol. Si aun así se pulsara,
+					     el servidor lo rechaza con un 403: esto es comodidad, no seguridad. -->
 					<button type="button" class="btn btn-sm text-danger btn-eliminar"
+						data-solo-admin
 						aria-label="Eliminar cliente">
 						<i class="fa-solid fa-trash" aria-hidden="true"></i>
 					</button>

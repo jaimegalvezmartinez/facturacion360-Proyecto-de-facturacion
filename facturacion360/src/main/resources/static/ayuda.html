@@ -25,7 +25,7 @@
 
 <!-- defer y no type="module": esta página no usa módulos ES, solo un archivo
      propio. El atributo basta para que el script espere al DOM. -->
-<script src="ayuda.js" defer></script>
+<script src="ayuda.js" defer></script><script type="module" src="js/sesion.js"></script>
 </head>
 <body>
 
@@ -60,7 +60,7 @@
             </li>
             <br> | <br>
             <li>
-                <a class="nav-link d-flex align-items-center" href="perfil.html">
+                <a class="nav-link d-flex align-items-center" href="perfil.html" data-solo-admin>
                     <img src="img/emisor.png"
                          alt="Mi Perfil"
                          style="
@@ -73,7 +73,34 @@
                          ">
                     <span>Mi Perfil</span>
                 </a>
-            </li>
+            		</li>
+					<li>
+					 <!--
+				      La insignia va como <i> de Font Awesome y no como <img> por dos motivos:
+				      la del <img> (img/sinfotoperfil.webp) es un avatar gris de 512 px que a
+				      tamaño de menú se ve como una mancha, y un icono que se pinta con una
+				      fuente se ve nítido a cualquier tamaño y con el color del enlace, que
+					  es lo que hace el resto del menú.
+					 -->
+					<a class="nav-link d-flex align-items-center gap-2"
+					 href="cuenta.html" aria-current="page">
+					 <i class="fa-solid fa-user insignia-menu" aria-hidden="true"></i>
+					 <span>Mi cuenta</span>
+					</a>
+                    <li>
+                        <!--
+                            Un <button> y no un <a>: el cierre de sesión es un POST que
+                            necesita token de seguridad, así que lo tiene que hacer
+                            js/sesion.js. Con un enlace, si ese archivo no llegara a
+                            cargarse, al pulsarlo se vería la pantalla de acceso y se
+                            pensaría que la sesión se había cerrado, cuando seguiría
+                            abierta en el servidor.
+                        -->
+                        <button type="button" class="nav-link" id="salir">
+                            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                            Salir
+                        </button>
+                    </li>
         </ul>
 
     </div>
@@ -199,7 +226,7 @@
                     <h3>
                         <button type="button" class="ayuda-bloque-boton"
                                 aria-expanded="true" aria-controls="panel-que-es-1">
-                            <span>Las cuatro pantallas de la aplicación</span>
+                            <span>Las pantallas de la aplicación</span>
                             <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
                         </button>
                     </h3>
@@ -237,6 +264,13 @@
                                             dirección, contacto y logo.
                                         </p>
                                     </div>
+									<div class="ayuda-tarjeta">
+									    <h4>Mi Cuenta</h4>
+									    <p>
+											Los datos de la Cuenta de inicio de sesión, aquí también podras
+											cambiar la contraseña de inicio de sesion.
+									    </p>
+									</div>
                                 </div>
 
                                 <p class="mb-0">
@@ -421,6 +455,13 @@
                                                     avatar y su logo.
                                                 </td>
                                             </tr>
+											<tr>
+											    <th scope="row">Mi Cuenta</th>
+											    <td>
+										        Los datos de la Cuenta de inicio de sesión, aquí también podras
+												cambiar la contraseña de inicio de sesion.
+											    </td>
+											</tr>
                                         </tbody>
                                     </table>
                                 </div>

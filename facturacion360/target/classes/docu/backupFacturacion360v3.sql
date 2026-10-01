@@ -166,5 +166,5 @@ CREATE TABLE `desglose_impositivo` (
 
 INSERT INTO `bd_facturacion`.`emisor` 
 (`idemisor`, `nombre`, `nif_cif`, `direccion`, `email`, `telefono`) 
-VALUES ('1', 'FUNDACION ONCE', 'G78661923', 'Sebastián Herrera 15', 'fundaciononce@fundaciononce.es', '915068888');
+VALUES ('1', 'Mi Empresa S.L', 'A12345678', 'Calle Mayor 15', 'miempresa@test.es', '900123456');
 
