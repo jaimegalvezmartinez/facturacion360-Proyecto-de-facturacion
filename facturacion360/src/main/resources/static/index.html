@@ -58,6 +58,20 @@
 					      </a>
 					  					  </li>
 										  <li>
+										      <!--
+										          data-solo-admin: sin este atributo, un USUARIO vería el enlace en el
+										          menú. Es comodidad, no protección —si alguien lo quita con el
+										          inspector, el servidor responde 403 al abrir la página—, pero es lo
+										          que evita enseñar un enlace que lleva a un sitio donde no se puede
+										          hacer nada.
+										      -->
+										      <a class="nav-link d-flex align-items-center gap-2"
+										         href="usuarios.html" data-solo-admin>
+										          <i class="fa-solid fa-users insignia-menu" aria-hidden="true"></i>
+										          <span>Usuarios</span>
+										      </a>
+										  </li>
+										  <li>
 										   <!--
 										    La insignia va como <i> de Font Awesome y no como <img> por dos motivos:
 										    la del <img> (img/sinfotoperfil.webp) es un avatar gris de 512 px que a

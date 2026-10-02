@@ -12,7 +12,7 @@
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
-    background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 45%, #ecfeff 100%);
+    background: linear-gradient(160deg, rgb(224, 27, 36) 0%, rgb(237, 51, 59) 45%, rgb(246, 97, 81) 100%);
 }
 
 /* La caja del formulario. El ancho máximo es lo que evita que en una pantalla
@@ -251,13 +251,247 @@
     }
 }
 
-/* Lo que solo puede ver un ADMIN (el enlace a "Mi Perfil" del menú y el botón
-   de la papelera en la tabla de clientes). El JavaScript añade esta clase a
-   <body> cuando comprueba que quien está dentro no lo es, y el CSS esconde lo
-   marcado. Es al revés de lo habitual a propósito: si el JavaScript falla o
-   tarda, lo que se ve es el botón de más y no un hueco raro en la tabla. */
+/* Lo que solo puede ver un ADMIN (el enlace a "Mi Perfil" y al panel de
+   "Usuarios" del menú, y el botón de la papelera en la tabla de clientes). El
+   JavaScript añade esta clase a <body> cuando comprueba que quien está dentro no
+   lo es, y el CSS esconde lo marcado. Es al revés de lo habitual a propósito: si
+   el JavaScript falla o tarda, lo que se ve es el botón de más y no un hueco raro
+   en la tabla. */
 .sin-permiso [data-solo-admin] {
     display: none !important;
+}
+
+/* ==========================================
+   PANEL DE USUARIOS (usuarios.html)
+   ========================================== */
+
+/* Una pantalla más ancha que "Mi cuenta" porque aquí hay una tabla con cinco
+   columnas y una de ellas son dos fechas. El ancho va en el contenedor y no en
+   las cajas, igual que en la pantalla de cuenta. */
+.usuarios-zona {
+    max-width: 68rem;
+    margin-top: 2.5rem;
+}
+
+.usuarios-titulo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--text-main);
+}
+
+/* El subtítulo explica para qué sirve la pantalla. En gris para que no compita
+   con el título, como el de la pantalla de acceso. */
+.usuarios-subtitulo {
+    font-size: 0.92rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+/* Una rejilla de dos columnas para los formularios que se abren debajo de la
+   tabla, y una sola en móvil. Los dos formularios (alta y edición) comparten
+   estas reglas porque son el mismo formulario con distinto contenido. */
+.usuarios-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 1rem;
+}
+
+.usuarios-formulario .ancho-completo {
+    grid-column: 1 / -1;
+}
+
+/* Los <select> del panel llevan el mismo aspecto que los <input> de
+   cuenta.html. Se escriben aquí para no repetir el bloque entero dos veces, y
+   el relleno de la derecha es el de un campo normal porque un <select> no lleva
+   icono propio dentro del campo. */
+.acceso-campo select {
+    width: 100%;
+    height: var(--alto-control);
+    padding: 0 2.4rem 0 0.85rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--text-main);
+    background: var(--white);
+    border: 1px solid var(--borde-suave);
+    border-radius: 8px;
+}
+
+/* El <select> no lleva icono propio dentro del campo, así que el padding de la
+   derecha es el de un campo normal y no el que deja hueco al icono. */
+.acceso-campo select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(71, 118, 247, 0.2);
+}
+
+.acceso-campo.con-icono select {
+    padding-right: 0.85rem;
+}
+
+/* La tabla. Los bordes de las celdas son muy suaves a propósito: en una tabla
+   de datos lo que separa son las líneas, no los colores, y un zebra de fondo en
+   filas de texto corto se lee como ruido. */
+.usuarios-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.usuarios-tabla th {
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 2px solid var(--borde-suave);
+}
+
+.usuarios-tabla td {
+    padding: 0.7rem 0.5rem;
+    border-bottom: 1px solid var(--borde-suave);
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+.usuarios-tabla tr:last-child td {
+    border-bottom: none;
+}
+
+/* La fila de una cuenta desactivada se apaga entera. No se esconde: la cuenta
+   sigue existiendo y hay que poder volver a activarla desde aquí mismo, así que
+   tiene que verse, solo atenuada para que se distinga de un vistazo. */
+.usuarios-tabla tr.inactiva {
+    color: #94a3b8;
+}
+
+.usuarios-tabla tr.inactiva .usuarios-usuario {
+    text-decoration: line-through;
+}
+
+.usuarios-usuario {
+    font-weight: 600;
+}
+
+.usuarios-celda-usuario {
+    width: 8.5rem;
+}
+
+.usuarios-celda-nombre {
+    min-width: 12rem;
+}
+
+.usuarios-celda-fecha {
+    width: 9rem;
+    white-space: nowrap;
+    color: #6c757d;
+}
+
+/* El <select> de la fila: pequeño y sin bordes, porque ahí no se está
+   rellenando un formulario sino cambiando una celda de golpe. */
+.celda-cambiar select {
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.4rem;
+    border: 1px solid var(--borde-suave);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--text-main);
+}
+
+/* Los botones de la celda de acciones. Sin el borde que tienen los botones de
+   Bootstrap porque aquí son de cuarto de ancho y un borde los hace parecer
+   botones principales. El contenedor con flex es un <div> DENTRO del <td>: poner
+   el display:flex en la celda entera la sacaría de la lógica de columnas de la
+   tabla. */
+.celda-acciones-panel {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+}
+
+.boton-panel {
+    border: 1px solid var(--borde-suave);
+    background: var(--white);
+    color: var(--text-main);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+.boton-panel:hover:not(:disabled) {
+    background: var(--acento-suave);
+}
+
+.boton-panel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* El botón de borrar, y solo él. El color no es un adorno: en una fila con tres botones,
+   cambiar un nombre y dejar de existir tienen que distinguirse de un vistazo, y el primero que
+   se lea sin mirar es justo el que hay que leer. Es el mismo rojo que usa el aviso de error,
+   para que "esto es lo que va a pasar" y "esto es lo que estás a punto de hacer" se parezcan. */
+.boton-panel.boton-peligro {
+    color: #b91c1c;
+    border-color: #f0b4b4;
+}
+
+.boton-panel.boton-peligro:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #dc2626;
+}
+
+/* El texto del panel de borrado: en rojo y con la nota de que la operación no se puede
+   deshacer, que es lo único que lo distingue del resto de paneles de esta página. */
+.aviso-peligro {
+    color: #b91c1c;
+    font-size: 0.88rem;
+    margin-top: 0;
+}
+
+/* El panel de formulario (alta o edición) que se despliega dentro de la tabla,
+   justo debajo de la fila a la que pertenece. Es una fila con colspan, igual que
+   los desplegables de clientes.html, y por eso el ancho se recalcula desde
+   columnasVisibles()... que en esta pantalla no existe. Aquí el colspan es fijo
+   porque las columnas de esta tabla no se pueden ocultar: son todas necesarias
+   para entender la cuenta. */
+.panel-fila {
+    background: #f8fafc;
+}
+
+.panel-fila > td {
+    padding: 1rem 0.75rem;
+}
+
+/* El texto de "nunca ha entrado" y de las fechas: se apaga para que la columna
+   no compita con el usuario y el rol, que son lo que se lee. */
+.usuarios-vacio {
+    color: #94a3b8;
+}
+
+.usuarios-nota {
+    margin: 1.25rem 0 0;
+    font-size: 0.82rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .usuarios-formulario {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* En pantallas estrechas la tabla no cabe. Se deja desplazar en horizontal
+   dentro de su propio contenedor en vez de hacer que toda la página se mueva:
+   el contenedor con overflow es lo que permite desplazar con el dedo sin que el
+   resto de la pantalla se vaya con él. */
+.usuarios-scroll {
+    overflow-x: auto;
 }
 
 /* El botón "Salir" del menú es un <button> (porque cerrar sesión es un POST que
