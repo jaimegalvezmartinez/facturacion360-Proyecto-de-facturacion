@@ -91,10 +91,14 @@ public class FacturaRepositoryJdbcImpl implements FacturaRepository {
 
 	@Override
 	public int obtenerUltimoNumero(int anio) {
+		// El operador REGEXP, y no REGEXP_LIKE: esta última es una función que solo existe en
+		// MySQL 8 y en MariaDB no está, así que con REGEXP_LIKE esta consulta fallaba al dar de
+		// alta una factura en cualquier MariaDB. El modificador (?i) va dentro del patrón porque
+		// el operador REGEXP no lleva banderas: es lo portable entre MySQL y MariaDB.
 		String sql = "SELECT COALESCE(MAX(CAST(SUBSTRING(num_factura, 8) AS UNSIGNED)), 0) "
 				+ "FROM facturas WHERE CHAR_LENGTH(num_factura) = 11 "
-				+ "AND REGEXP_LIKE(num_factura, ?, 'i') AND SUBSTRING(num_factura, 8) <> '0000'";
-		return jdbcTemplate.queryForObject(sql, Integer.class, "^F-" + anio + "-[0-9]{4}$");
+				+ "AND num_factura REGEXP ? AND SUBSTRING(num_factura, 8) <> '0000'";
+		return jdbcTemplate.queryForObject(sql, Integer.class, "(?i)^F-" + anio + "-[0-9]{4}$");
 	}
 
 	@Override
