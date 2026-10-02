@@ -83,7 +83,7 @@
     <div id="menuCompartir" class="menu-compartir" popover>
         <p id="avisoCompartirBorrador" class="aviso-borrador d-none">
             Es un <strong>borrador</strong>: no es una factura válida. El documento sale
-            con su marca de agua y sin QR, y el mensaje lo dirá.
+            con su marca de agua, y el mensaje lo dirá.
         </p>
 
         <button id="compartirWhatsapp" type="button" class="opcion-compartir">
@@ -141,40 +141,6 @@
                         <p id="fechaFactura" class="mb-0 small"></p>
                         <p id="estadoFactura" class="mb-0 small text-muted"></p>
                     </div>
-
-                    <!--
-                        Bloque QR · Orden HAC/1177/2024, arts. 20 y 21.
-                        Requisitos de impresión:
-                          - Norma ISO/IEC 18004, nivel de corrección M.
-                          - Tamaño: entre 30×30 mm y 40×40 mm. Se usan 35 mm en A4 y Carta y
-                            30 mm en A5, que es el mínimo legal: el QR es lo único que no se
-                            encoge con la densidad de la hoja.
-                          - Zona de silencio: ≥ 2 mm (6 mm recomendados en A4, 2 mm en A5).
-                          - Texto encima: «QR tributario:» (distingue este QR del de pago).
-                          - Texto debajo: «VERI*FACTU» con subtexto explicativo.
-                          - Ambos textos a 9pt en todos los formatos: el art. 20 los pide con
-                            tamaño «similar al resto de datos de la factura».
-                          - Posición: la AEAT publica «arriba, próximo al margen superior,
-                            preferiblemente centrado». Aquí va arriba a la derecha: cumple la
-                            parte exigida y el centrado es preferencia, no requisito. Centrarlo
-                            impediría compartir fila con el número de factura, que es lo que
-                            permite que el A5 quepa en un folio.
-                        Solo se muestra si la factura está emitida. El JS oculta este bloque
-                        para borradores y el backend devuelve 404 si se pide el PNG directamente.
-                    -->
-                    <figure id="bloqueQr" class="bloque-verifactu d-none"
-                            aria-label="Código QR de verificación fiscal">
-                        <p class="rotulo-qr">QR tributario:</p>
-                        <img id="imagenQr"
-                             class="qr-verifactu"
-                             src=""
-                             alt="Código QR para verificar esta factura en la sede electrónica de la AEAT"
-                             onerror="this.closest('.bloque-verifactu').classList.add('d-none')">
-                        <figcaption class="leyenda-verifactu">
-                            VERI*FACTU
-                            <small>Factura verificable en la sede electrónica de la AEAT</small>
-                        </figcaption>
-                    </figure>
                 </div>
             </header>
 
@@ -223,9 +189,7 @@
 
             <!-- El IVA agrupado por tipo. Una factura con lineas al 21 % y al 10 % tiene que
                  ensenar cuanta base va a cada tipo y cuanta cuota sale de cada una; el total
-                 de IVA por si solo no deja comprobar nada. Es ademas el Desglose que exige la
-                 AEAT en el registro de Verifactu, asi que lo que se imprime y lo que se
-                 declara salen del mismo sitio. -->
+                 de IVA por si solo no deja comprobar nada. -->
             <div class="d-flex justify-content-between align-items-start flex-wrap fila-desglose-totales">
                 <section id="bloqueDesglose" class="desglose-factura flex-grow-1 d-none" aria-labelledby="tituloDesglose">
                     <h2 id="tituloDesglose" class="h6">Desglose del IVA</h2>

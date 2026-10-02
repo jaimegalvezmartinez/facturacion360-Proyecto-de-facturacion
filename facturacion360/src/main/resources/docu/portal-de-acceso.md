@@ -64,7 +64,7 @@ Solo tres cosas, y están marcadas como abiertas en `ConfiguracionSeguridad`:
 - `POST /auth/login`, `POST /auth/registro` y `GET /auth/csrf`
 
 **Todo lo demás exige sesión**: las cinco pantallas (inicio, clientes, facturas, perfil y
-ayuda), la API entera (`/cliente`, `/factura`, `/emisor`, `/verifactu`), los PDF, y también
+ayuda), la API entera (`/cliente`, `/factura`, `/emisor`), los PDF, y también
 la documentación de Swagger.
 
 La regla general es `anyRequest().authenticated()`: una pantalla nueva nace protegida, y para
@@ -95,8 +95,7 @@ resto de errores del proyecto, con el motivo en `detail`.
 | **Cambiar los datos del emisor** (`PUT /emisor`) | Sí | **No** (403) |
 
 Las dos operaciones restringidas son las que no se pueden deshacer: borrar un cliente, y tocar
-la razón social, el NIF y el domicilio que salen impresos en las facturas y dentro del QR de
-la AEAT.
+la razón social, el NIF y el domicilio que salen impresos en las facturas.
 
 En la pantalla, un USUARIO no ve el enlace "Mi Perfil" ni el botón de la papelera. Eso es
 comodidad, **no protección**: si alguien quita el `data-solo-admin` con el inspector, el botón
