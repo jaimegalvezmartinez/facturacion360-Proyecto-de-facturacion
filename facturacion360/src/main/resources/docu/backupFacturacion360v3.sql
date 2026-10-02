@@ -9,7 +9,8 @@
 --   desglose_impositivo   tabla nueva
 --
 -- Si YA tienes datos sobre el v2 y no quieres perderlos, no cargues esto:
--- usa docu/migracion-verifactu.sql, que hace el mismo cambio sin borrar nada.
+-- replica a mano los ALTER TABLE y el CREATE TABLE de abajo, que hacen el
+-- mismo cambio sin borrar nada.
 --
 -- El v1 y el v2 se quedan como estan a proposito, para poder volver a un
 -- esquema anterior. No son copias de seguridad y no hay que cargarlos.

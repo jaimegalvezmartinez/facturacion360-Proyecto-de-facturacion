@@ -10,8 +10,6 @@ const tablaDesglose = document.getElementById("tablaDesglose");
 const bloqueDesglose = document.getElementById("bloqueDesglose");
 const seccionConceptos = document.getElementById("bloqueConceptos");
 
-const bloqueQr      = document.getElementById("bloqueQr");
-const imagenQr      = document.getElementById("imagenQr");
 const marcaAgua     = document.getElementById("marcaAgua");
 const selectFormato = document.getElementById("selectFormatoPapel");
 const estiloHoja    = document.getElementById("estiloFormatoPapel");
@@ -84,7 +82,6 @@ function mostrarDetalle(detalle) {
 
     const esBorrador = factura.estado === "BORRADOR";
     marcaAgua.classList.toggle("d-none", !esBorrador);
-    mostrarQr(esBorrador, factura.idFactura);
 
     // El contenido acaba de entrar: se recalculan los cortes de página del
     // borrador para que enseñe los mismos que saldrán impresos.
@@ -95,9 +92,8 @@ function mostrarDetalle(detalle) {
  * Pinta el cuadro del IVA agrupado por tipo.
  *
  * El desglose lo calcula el SERVIDOR y aqui solo se pinta. No es pereza: la regla de
- * redondeo -redondear la cuota de cada linea y luego sumar- es la misma que acabara dentro
- * de la huella que se comunica a Hacienda, y tenerla escrita en dos idiomas es tenerla
- * escrita dos veces para que se desalineen.
+ * redondeo -redondear la cuota de cada linea y luego sumar- es sutil, y tenerla
+ * escrita en dos idiomas es tenerla escrita dos veces para que se desalineen.
  *
  * Si no hay desglose -una factura sin conceptos- el cuadro no se ensena en vez de salir
  * vacio: un recuadro con cabeceras y nada debajo parece un fallo de carga.
@@ -148,24 +144,6 @@ function mostrarConceptos(conceptos) {
             tablaConceptos.appendChild(fila);
         }
     }
-}
-
-/**
- * Muestra el bloque QR si la factura está emitida, o lo oculta si es borrador.
- *
- * Los borradores no generan registro de facturación y por tanto no tienen URL
- * en la sede de la AEAT. Intentar cargar la imagen daría un 404.
- *
- * @param {boolean} esBorrador - true si la factura es un borrador
- * @param {number}  idFactura  - identificador de la factura
- */
-function mostrarQr(esBorrador, idFactura) {
-    if (esBorrador) {
-        bloqueQr.classList.add("d-none");
-        return;
-    }
-    imagenQr.src = `/verifactu/qr/${idFactura}`;
-    bloqueQr.classList.remove("d-none");
 }
 
 /**
@@ -925,18 +903,6 @@ function construirHtmlFactura(detalle, emisor) {
     const esBorrador = f.estado === "BORRADOR";
     const marcaAgua = esBorrador ? `<p class="marca-agua" aria-hidden="true">BORRADOR</p>` : '';
 
-    // Mismo onerror que el visor (d-none, no style inline): un QR que no carga
-    // se esconde entero, con su rótulo y su leyenda.
-    const qr = !esBorrador ? `
-        <figure class="bloque-verifactu" aria-label="Código QR de verificación fiscal">
-            <p class="rotulo-qr">QR tributario:</p>
-            <img class="qr-verifactu" src="/verifactu/qr/${encodeURIComponent(f.idFactura)}" alt="Código QR para verificar esta factura en la sede electrónica de la AEAT" onerror="this.closest('.bloque-verifactu').classList.add('d-none')">
-            <figcaption class="leyenda-verifactu">
-                VERI*FACTU<small>Factura verificable en la sede electrónica de la AEAT</small>
-            </figcaption>
-        </figure>
-    ` : '';
-
     const conceptosHtml = conceptos.length === 0
         ? `<tr><td colspan="7" class="text-center text-muted">Esta factura no tiene conceptos registrados.</td></tr>`
         : conceptos.map(co => `
@@ -975,7 +941,6 @@ function construirHtmlFactura(detalle, emisor) {
                     <p class="mb-0 small">Fecha: ${escaparHtml(formatearFecha(f.fechaEmision))}</p>
                     <p class="mb-0 small text-muted">Estado: ${escaparHtml(f.estado)}</p>
                 </div>
-                ${qr}
             </div>
         </header>
 

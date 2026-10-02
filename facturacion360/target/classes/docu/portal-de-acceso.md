@@ -64,7 +64,7 @@ Solo tres cosas, y están marcadas como abiertas en `ConfiguracionSeguridad`:
 - `POST /auth/login`, `POST /auth/registro` y `GET /auth/csrf`
 
 **Todo lo demás exige sesión**: las cinco pantallas (inicio, clientes, facturas, perfil y
-ayuda), la API entera (`/cliente`, `/factura`, `/emisor`, `/verifactu`), los PDF, y también
+ayuda), la API entera (`/cliente`, `/factura`, `/emisor`), los PDF, y también
 la documentación de Swagger.
 
 La regla general es `anyRequest().authenticated()`: una pantalla nueva nace protegida, y para

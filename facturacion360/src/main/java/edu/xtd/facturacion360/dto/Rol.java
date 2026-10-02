@@ -25,7 +25,7 @@ public enum Rol {
 	 * <ul>
 	 *   <li>Borrar clientes ({@code DELETE /cliente/{id}}).</li>
 	 *   <li>Modificar los datos del emisor ({@code PUT /emisor}), que son los que salen
-	 *       impresos en la factura y en el QR de la AEAT.</li>
+	 *       impresos en la factura.</li>
 	 * </ul>
 	 *
 	 * <p>Los usuarios de alta por el registro público (<code>POST /auth/registro</code>)

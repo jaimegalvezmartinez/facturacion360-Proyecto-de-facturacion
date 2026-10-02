@@ -17,8 +17,8 @@ import edu.xtd.facturacion360.dto.DesgloseImpositivo;
  * <p><strong>Suma, no recalcula.</strong> Y ése es el punto entero de esta clase. La regla de
  * redondeo que fija el reglamento es «se redondea la cuota de CADA LÍNEA a dos decimales y
  * después se suman», nunca al revés: redondear al final puede dar un céntimo de diferencia con
- * lo que aparece impreso en la factura, y ese céntimo acaba dentro de la huella que se comunica
- * a Hacienda. Como {@code FacturaServiceImpl.calcularImportes} ya redondea línea a línea, aquí
+ * lo que aparece impreso en la factura, y ese céntimo acaba dentro del importe que se declara.
+ * Como {@code FacturaServiceImpl.calcularImportes} ya redondea línea a línea, aquí
  * basta con agrupar y sumar lo que ya viene hecho. Si algún día alguien tiene la tentación de
  * recalcular desde el precio unitario, es exactamente la tentación que hay que resistir.</p>
  *
@@ -67,9 +67,9 @@ public final class CalculadoraDesglose {
 	/**
 	 * Agrupa las líneas por la terna régimen + calificación + tipo, y suma sus importes.
 	 *
-	 * <p>El orden del resultado es estable y no da igual: este desglose va a acabar dentro del
-	 * XML que se firma, y una lista que salga hoy en un orden y mañana en otro cambiaría la
-	 * huella sin que hubiera cambiado ni un importe. Se ordena por la clave entera.</p>
+	 * <p>El orden del resultado es estable y no da igual: el desglose se imprime y se
+	 * comunica, y una lista que salga hoy en un orden y mañana en otro haría que dos facturas
+	 * iguales parecieran distintas. Se ordena por la clave entera.</p>
 	 *
 	 * @param conceptos las líneas ya calculadas, con sus importes redondeados
 	 * @return una línea por grupo, o lista vacía si no hay conceptos

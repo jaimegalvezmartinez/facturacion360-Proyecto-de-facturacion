@@ -284,8 +284,8 @@ public class FacturaRepositoryJdbcImpl implements FacturaRepository {
 	@Override
 	public List<DesgloseImpositivo> buscarDesglose(int idFactura) {
 		// El mismo orden con el que se guardo, que es el que fija CalculadoraDesglose. Si esto
-		// saliera en un orden distinto cada vez, la huella que se firme manana cambiaria sin
-		// que hubiera cambiado ni un importe.
+		// saliera en un orden distinto cada vez, el desglose imprimiria sus lineas cambiada de
+		// sitio entre dos lecturas de la misma factura.
 		String sql = "SELECT impuesto, clave_regimen, calificacion, tipo_impositivo, "
 				+ "base_imponible, cuota_repercutida FROM desglose_impositivo "
 				+ "WHERE idfactura = ? ORDER BY impuesto, clave_regimen, calificacion, tipo_impositivo";
