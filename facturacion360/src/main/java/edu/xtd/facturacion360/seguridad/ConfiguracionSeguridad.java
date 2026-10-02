@@ -43,8 +43,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * </ul>
  * <p>Nada más. En concreto, las páginas ({@code index.html}, {@code clientes.html},
  * {@code facturas.html}, {@code perfil.html}, {@code ayuda.html}), los PDF y
- * <strong>toda</strong> la API ({@code /cliente}, {@code /factura}, {@code /emisor},
- * {@code /verifactu}) exigen sesión iniciada.</p>
+ * <strong>toda</strong> la API ({@code /cliente}, {@code /factura}, {@code /emisor})
+ * exigen sesión iniciada.</p>
  *
  * <h2>Qué decide el rol</h2>
  * <p>Solo dos operaciones, y las dos por una misma razón: son las que tocan datos que no se
@@ -52,8 +52,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * <ul>
  *   <li>{@code DELETE /cliente/{id}} → ADMIN. Borrar no se puede deshacer.</li>
  *   <li>{@code PUT /emisor} → ADMIN. Es la razón social, el NIF y el domicilio que salen
- *       impresos en las facturas y dentro del QR de la AEAT: no es un dato cualquiera de un
- *       perfil, es un dato fiscales.</li>
+ *       impresos en las facturas: no es un dato cualquiera de un perfil, es un dato
+ *       fiscales.</li>
  * </ul>
  *
  * <h2>Por qué no hay login por formulario de Spring</h2>

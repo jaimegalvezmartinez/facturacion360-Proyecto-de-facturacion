@@ -159,7 +159,6 @@
                 <li><a href="#facturas">Facturas</a></li>
                 <li><a href="#estados">Estados de una factura</a></li>
                 <li><a href="#visor">Ver e imprimir</a></li>
-                <li><a href="#verifactu">VeriFactu y QR</a></li>
                 <li><a href="#teclado">Teclado y accesibilidad</a></li>
                 <li><a href="#problemas">Problemas frecuentes</a></li>
             </ol>
@@ -310,7 +309,7 @@
                                     <li>
                                         Los datos de la empresa que emite, rellenados en
                                         <strong>Mi Perfil</strong>. Sin ellos, las facturas
-                                        salen sin datos de emisor y sin QR.
+                                        salen sin datos de emisor.
                                     </li>
                                     <li>
                                         Al menos un cliente, para poder facturar.
@@ -352,7 +351,7 @@
                             <strong>Entra en Mi Perfil y guarda los datos de tu empresa</strong>
                             Botón <em>Modificar</em>, rellena el formulario y guarda. Es el
                             paso que más se echa de menos si se salta: sin emisor, las
-                            facturas salen con guiones y sin QR.
+                            facturas salen con guiones.
                         </div>
                     </li>
                     <li>
@@ -381,8 +380,7 @@
                         <div>
                             <strong>Cuando esté correcta, emítela</strong>
                             Edita el borrador y cambia el estado a <em>Emitida</em>. En ese
-                            momento la factura ya tiene su QR de VeriFactu y vale como
-                            documento fiscal.
+                            momento la factura vale como documento fiscal.
                         </div>
                     </li>
                     <li>
@@ -1191,7 +1189,6 @@
                                                 <th scope="col">Estado</th>
                                                 <th scope="col">Para qué sirve</th>
                                                 <th scope="col">Se puede editar</th>
-                                                <th scope="col">Tiene QR</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1205,16 +1202,14 @@
                                                     quiera, y se edita sin límite.
                                                 </td>
                                                 <td>Sí, cuantas veces se quiera</td>
-                                                <td>No</td>
                                             </tr>
                                             <tr>
                                                 <th scope="row"><em>Emitida</em></th>
                                                 <td>
                                                     Factura en firme. Exige al menos un
-                                                    concepto y lleva su QR de VeriFactu.
+                                                    concepto.
                                                 </td>
                                                 <td>No</td>
-                                                <td>Sí</td>
                                             </tr>
                                             <tr>
                                                 <th scope="row"><em>Anulada</em></th>
@@ -1224,7 +1219,6 @@
                                                     tener el registro de lo que pasó.
                                                 </td>
                                                 <td>No</td>
-                                                <td>Sí</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1242,8 +1236,8 @@
                                 <p class="mb-0">
                                     Un borrador se reconoce también a simple vista: en el
                                     visor sale con una marca de agua <em>BORRADOR</em> en
-                                    diagonal y sin el código QR, para que no se confunda con
-                                    una factura buena por un error de dedo.
+                                    diagonal, para que no se confunda con una factura
+                                    buena por un error de dedo.
                                 </p>
                             </div>
                         </div>
@@ -1287,7 +1281,6 @@
                                     <li>El <strong>desglose del IVA</strong> por tipo impositivo, si lo hay.</li>
                                     <li>Los totales: subtotal, IVA y total.</li>
                                     <li>Las <strong>observaciones</strong>, si se escribieron.</li>
-                                    <li>El <strong>QR de VeriFactu</strong>, si la factura está emitida.</li>
                                 </ul>
                                 <p class="mb-0">
                                     Si la factura es larga, la hoja se parte en varias páginas
@@ -1417,60 +1410,6 @@
                                     Las facturas que ya están en la cola no se vuelven a
                                     ofrecer en el buscador, y el contador de resultados
                                     avisa de cuántas has dejado fuera por eso.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ---------------------------------------------------------
-                 VERIFACTU
-                 --------------------------------------------------------- -->
-            <section class="ayuda-seccion" id="verifactu" data-ayuda-bloque>
-                <h2>
-                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-                    VeriFactu y QR
-                    <a class="ayuda-ancla" href="#verifactu"
-                       aria-label="Enlace a este apartado">#</a>
-                </h2>
-                <p>
-                    Las facturas emitidas llevan un código QR de VeriFactu. Es el sistema con
-                    el que la Agencia Tributaria permite comprobar una factura desde el
-                    propio documento.
-                </p>
-
-                <div class="ayuda-bloque" data-ayuda-bloque>
-                    <h3>
-                        <button type="button" class="ayuda-bloque-boton"
-                                aria-expanded="true" aria-controls="panel-verifactu-1">
-                            <span>Qué es y cómo se comprueba</span>
-                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-                        </button>
-                    </h3>
-                    <div class="ayuda-bloque-envoltorio" id="panel-verifactu-1"
-                         role="group" aria-labelledby="panel-verifactu-1">
-                        <div class="ayuda-bloque-contenido">
-                            <div class="ayuda-bloque-cuerpo">
-                                <p>
-                                    El QR apunta a la sede electrónica de la AEAT y lleva
-                                    dentro cuatro datos de la factura: el NIF del emisor, el
-                                    número de serie, la fecha de emisión y el importe total.
-                                </p>
-                                <p>
-                                    Para comprobarla se lee el QR con la cámara del móvil o
-                                    con un lector: se abre la página de verificación de la
-                                    AEAT y se ve si esa factura existe y coincide con lo que
-                                    dice el papel. No hace falta instalar nada ni entrar en
-                                    ninguna cuenta.
-                                </p>
-                                <p class="mb-0">
-                                    Si el QR no aparece, revisa dos cosas: que la factura esté
-                                    en estado <strong>Emitida</strong> (los borradores no
-                                    llevan QR, porque aún no son una factura fiscal) y que
-                                    los datos del emisor estén guardados en
-                                    <em>Mi Perfil</em>, porque sin ellos no se puede generar
-                                    el código.
                                 </p>
                             </div>
                         </div>
@@ -1686,7 +1625,7 @@
                     <h3>
                         <button type="button" class="ayuda-bloque-boton"
                                 aria-expanded="false" aria-controls="panel-problemas-3">
-                            <span>La factura no sale con QR</span>
+                            <span>El emisor sale con guiones</span>
                             <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
                         </button>
                     </h3>
@@ -1695,12 +1634,9 @@
                         <div class="ayuda-bloque-contenido">
                             <div class="ayuda-bloque-cuerpo">
                                 <p class="mb-0">
-                                    Comprueba las dos cosas de la sección
-                                    <a href="#verifactu">VeriFactu y QR</a>: que la factura
-                                    esté en estado <strong>Emitida</strong> y que el emisor
-                                    tenga los datos guardados en <em>Mi Perfil</em>. Si es
-                                    un borrador es que funciona como debe: lleva su marca
-                                    de agua y ni debe llevar QR.
+                                    Comprueba que los datos del emisor estén guardados en
+                                    <em>Mi Perfil</em>. Si es un borrador es que funciona
+                                    como debe: lleva su marca de agua.
                                 </p>
                             </div>
                         </div>

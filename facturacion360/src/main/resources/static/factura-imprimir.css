@@ -46,13 +46,6 @@ body {
     --logo-alto: 100px;
     --logo-ancho-max: 150px;
     --totales-ancho: 320px;
-    /*
-     * El QR es la única medida que NO se encoge con la densidad: los 30 mm son
-     * el mínimo del art. 21 de la Orden HAC/1177/2024, no una preferencia de
-     * diseño, y la zona de silencio tiene su propio mínimo de 2 mm.
-     */
-    --qr-lado: 35mm;
-    --qr-silencio: 6mm;
 
     /* Hoja del borrador. La variable la cambia el selector de formato
        (A4/A5/Carta) desde el JS; el fallback deja A4 antes de que corra. */
@@ -83,7 +76,7 @@ body {
 }
 
 /*
- * La columna derecha de la cabecera: número de factura y bloque QR.
+ * La columna derecha de la cabecera: el número de factura.
  *
  * Lleva clase propia porque el A5 la reordena, y un selector estructural del
  * tipo ".cabecera-factura > div:last-child" se rompería en cuanto alguien
@@ -103,65 +96,6 @@ body {
     /* Un número de factura partido en dos líneas deja de leerse como un número
        de factura. En la cabecera estrecha del A5 se partía. */
     white-space: nowrap;
-}
-
-/* Bloque QR · Orden HAC/1177/2024 — pantalla */
-.bloque-verifactu {
-    text-align: center;
-    margin: 0;
-    /* Zona de silencio. Va como padding y no como margin a propósito: así el
-       blanco es parte de la caja del QR y viaja con él, en vez de colapsar
-       contra los hermanos y dejar el código pegado a la tabla. Y da el mismo
-       aire en el borrador que en el papel, para que los cortes de página
-       caigan en el mismo sitio. */
-    padding: var(--qr-silencio);
-    background: #fff;
-    /* outline en vez de border: da el recuadro punteado de delimitación en
-       pantalla sin ocupar sitio en el layout (border sí lo ocuparía y dejaría
-       la caja 2px más alta que la impresa). En impresión se anula. */
-    outline: 1px dashed #ced5db;
-}
-
-.qr-verifactu {
-    display: block;
-    /* Lado en milímetros absolutos, nunca en unidades relativas: el rango
-       legal (30-40 mm) es físico. El token lo baja a 30 mm en A5. */
-    width: var(--qr-lado);
-    height: var(--qr-lado);
-    margin: 0 auto;
-    /* Sin esto, el modo "ahorro de tinta" o una impresión en gris agresiva
-       pueden bajar el contraste por debajo del umbral de escaneo. */
-    -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-}
-
-/* 9pt en los dos medios: el art. 20 pide que la leyenda tenga un tamaño
-   "similar al resto de datos de la factura", así que no baja con la densidad
-   aunque el cuerpo del A5 sí lo haga. */
-.rotulo-qr {
-    font-weight: 700;
-    font-size: 9pt;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin: 0 0 6px;
-    color: #14181d;
-}
-
-.leyenda-verifactu {
-    display: block;
-    font-weight: 700;
-    font-size: 9pt;
-    letter-spacing: 0.06em;
-    margin-top: 6px;
-    color: #14181d;
-}
-
-.leyenda-verifactu small {
-    display: block;
-    font-weight: 400;
-    font-size: 7pt;
-    color: #555;
-    margin-top: 2px;
 }
 
 .logo-emisor {
@@ -364,8 +298,6 @@ body {
     --logo-alto: 12mm;
     --logo-ancho-max: 30mm;
     --totales-ancho: 46mm;
-    --qr-lado: 30mm;
-    --qr-silencio: 2mm;
 }
 
 /*
@@ -396,60 +328,19 @@ body {
 }
 
 /*
- * Cabecera del A5 en dos filas. Se apila SOLO el contenedor exterior: la
- * columna de la derecha sigue en fila, así que el número de factura y el QR
- * comparten línea. Apilar la cabecera entera —lo que se hacía antes— dejaba el
- * QR debajo de todo y se comía 124 mm de los 182 disponibles.
+ * Cabecera del A5 en dos filas: la columna izquierda del logo y el nombre se
+ * queda arriba y el número de factura pasa a su propia fila.
  */
 .hoja-estrecha .cabecera-factura {
     flex-direction: column;
 }
 
-/* La fila del número + QR ocupa el ancho completo y separa sus dos extremos:
-   el número a la izquierda y el QR arriba a la derecha. */
 .hoja-estrecha .datos-identificacion {
     text-align: left;
 }
 
 .hoja-estrecha .cabecera-identificacion {
     width: 100%;
-    justify-content: space-between;
-}
-
-/*
- * Bloque QR del A5: el código a la izquierda y sus dos leyendas apiladas a su
- * derecha, en vez de una encima y otra debajo.
- *
- * Los textos son los mismos y siguen a 9pt, pero dejan de sumar alto: el bloque
- * pasa de 51 mm a los 34 mm del propio código más su zona de silencio. Son 17 mm
- * de los 182 que tiene la hoja, y sin ellos el A5 no cabe en un folio.
- *
- * Las tres posiciones van declaradas: con la colocación automática, la imagen
- * ocupando dos filas chocaría con el rótulo, que va antes en el marcado.
- */
-.hoja-estrecha .bloque-verifactu {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    column-gap: 2mm;
-    text-align: left;
-}
-
-.hoja-estrecha .qr-verifactu {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-}
-
-.hoja-estrecha .rotulo-qr {
-    grid-column: 2;
-    grid-row: 1;
-    margin: 0;
-}
-
-.hoja-estrecha .leyenda-verifactu {
-    grid-column: 2;
-    grid-row: 2;
-    margin: 0;
 }
 
 /*
@@ -840,8 +731,8 @@ body.con-sidebar {
     }
 
     /*
-     * Aquí ya no hay medidas del documento: el cuerpo, la tabla, el logo y el
-     * QR salen de la escala de densidad de .documento-factura, que es la misma
+     * Aquí ya no hay medidas del documento: el cuerpo, la tabla y el logo
+     * salen de la escala de densidad de .documento-factura, que es la misma
      * que usa el borrador. Todo lo que se declarase aquí sería una diferencia
      * entre lo que se mide en pantalla y lo que se imprime, y el paginador
      * cuenta con que no haya ninguna.
@@ -854,14 +745,6 @@ body.con-sidebar {
     }
 
     tr {
-        break-inside: avoid;
-    }
-
-    .bloque-verifactu {
-        /* La zona de silencio ya viene de la regla base; aquí solo se quita el
-           recuadro punteado de pantalla, que no se imprime. */
-        outline: none;
-        /* Un QR partido entre dos folios no se puede escanear. */
         break-inside: avoid;
     }
 

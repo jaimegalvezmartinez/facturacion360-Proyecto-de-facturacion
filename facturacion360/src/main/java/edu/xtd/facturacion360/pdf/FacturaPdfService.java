@@ -12,14 +12,12 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 
-import com.google.zxing.WriterException;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import edu.xtd.facturacion360.dto.DetalleFactura;
 import edu.xtd.facturacion360.dto.Emisor;
 import edu.xtd.facturacion360.service.EmisorService;
 import edu.xtd.facturacion360.service.FacturaService;
-import edu.xtd.facturacion360.verifactu.qr.GeneradorQr;
 
 /**
  * Genera el PDF de una factura para poder compartirla.
@@ -34,10 +32,6 @@ import edu.xtd.facturacion360.verifactu.qr.GeneradorQr;
  * <p>Que las dos hojas digan lo mismo no se deja a la disciplina: lo comprueba
  * {@code FacturaPdfEstilosTests}, que compara los tokens de densidad del visor
  * con los literales del PDF y falla nombrando el que haya divergido.</p>
- *
- * <p>El QR no se pide por HTTP al endpoint que ya existe: se genera aquí con el
- * mismo {@link GeneradorQr} y se incrusta como {@code data:} en la plantilla.
- * Así el PDF no depende de que el servidor pueda llamarse a sí mismo.</p>
  */
 @Service
 public class FacturaPdfService {
@@ -55,16 +49,13 @@ public class FacturaPdfService {
 
 	private final FacturaService  facturaService;
 	private final EmisorService   emisorService;
-	private final GeneradorQr     generadorQr;
 	private final ITemplateEngine motorPlantillas;
 
 	public FacturaPdfService(FacturaService facturaService,
 	                         EmisorService emisorService,
-	                         GeneradorQr generadorQr,
 	                         ITemplateEngine motorPlantillas) {
 		this.facturaService  = facturaService;
 		this.emisorService   = emisorService;
-		this.generadorQr     = generadorQr;
 		this.motorPlantillas = motorPlantillas;
 	}
 
@@ -91,11 +82,9 @@ public class FacturaPdfService {
 	 * @param idFactura identificador de la factura
 	 * @param formato   el papel en el que se maqueta
 	 * @return el documento y su nombre de fichero
-	 * @throws WriterException si no se puede construir el código QR obligatorio
-	 * @throws IOException     si falla el render o la escritura en memoria
+	 * @throws IOException si falla el render o la escritura en memoria
 	 */
-	public FacturaPdf generar(int idFactura, FormatoPapel formato)
-			throws WriterException, IOException {
+	public FacturaPdf generar(int idFactura, FormatoPapel formato) throws IOException {
 		DetalleFactura detalle = facturaService.obtenerDetalle(idFactura);
 		Emisor emisor = emisorService.find();
 
@@ -132,7 +121,7 @@ public class FacturaPdfService {
 
 	/** Rellena la plantilla con los datos de la factura. */
 	private String componerHtml(DetalleFactura detalle, Emisor emisor, FormatoPapel formato)
-			throws WriterException, IOException {
+			throws IOException {
 
 		boolean esBorrador = "BORRADOR".equals(detalle.factura().estado());
 
@@ -147,7 +136,6 @@ public class FacturaPdfService {
 		contexto.setVariable("css",        enCdata(leerCss()));
 		contexto.setVariable("reglaPagina", enCdata(reglaPagina(formato)));
 		contexto.setVariable("logo",       datosDelLogo(emisor));
-		contexto.setVariable("qr",         datosDelQr(detalle, emisor, esBorrador));
 		// Uno por documento: NumberFormat no es seguro entre hilos y este
 		// servicio es un singleton al que pueden entrar dos peticiones a la vez.
 		contexto.setVariable("fmt",        new FormateadorPdf());
@@ -208,35 +196,5 @@ public class FacturaPdfService {
 			return null;
 		}
 		return "data:image/png;base64," + Base64.getEncoder().encodeToString(emisor.logo());
-	}
-
-	/**
-	 * El QR como {@code data:}, o {@code null} si esta factura no lleva.
-	 *
-	 * <p>Un borrador no tiene registro de facturación y por tanto no tiene URL en
-	 * la sede de la AEAT: es la misma regla que aplica el visor en
-	 * {@code mostrarQr()} y la que hace que el endpoint del PNG responda 404.
-	 * Sin emisor configurado tampoco hay QR, porque su NIF forma parte de la
-	 * URL que se codifica.</p>
-	 *
-	 * <p>Un fallo generando el QR <strong>tumba el PDF</strong>, y es a propósito.
-	 * En una factura emitida el QR es obligatorio (art. 21), y el visor lo está
-	 * enseñando en pantalla mientras tanto: devolver un PDF sin él dejaría que el
-	 * usuario mandara a su cliente un documento legalmente deficiente sin
-	 * enterarse. Un error que se ve es mejor que un documento que no vale.</p>
-	 *
-	 * @throws WriterException si ZXing no puede construir la matriz del código
-	 * @throws IOException     si falla la escritura del PNG en memoria
-	 */
-	private String datosDelQr(DetalleFactura detalle, Emisor emisor, boolean esBorrador)
-			throws WriterException, IOException {
-
-		if (esBorrador || emisor == null || emisor.cif() == null) {
-			return null;
-		}
-
-		String url = generadorQr.construirUrl(detalle.factura(), emisor.cif());
-		return "data:image/png;base64,"
-				+ Base64.getEncoder().encodeToString(generadorQr.generarPng(url));
 	}
 }

@@ -118,57 +118,6 @@ p {
     font-size: 0.85em;
 }
 
-.c-qr {
-    text-align: right;
-    width: 1%;                     /* la celda se ciñe al QR, que es fijo */
-}
-
-/* ── Bloque del QR · Orden HAC/1177/2024 ───────────────────────────── */
-
-/*
- * La zona de silencio va como padding y no como margin, igual que en el visor:
- * así el blanco es parte de la caja del código y no colapsa contra lo de al lado.
- */
-.bloque-qr {
-    display: inline-block;
-    padding: 6mm;                  /* @token --qr-silencio */
-    text-align: center;
-    page-break-inside: avoid;      /* un QR partido en dos folios no se escanea */
-}
-
-.bloque-qr img {
-    display: block;
-    width: 35mm;                   /* @token --qr-lado */
-    height: 35mm;                  /* @token --qr-lado */
-}
-
-/* 9pt en todos los formatos: el art. 20 pide la leyenda «bien visible», con un
-   tamaño similar al del resto de la factura, así que no baja con la densidad. */
-.rotulo-qr {
-    font-size: 9pt;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #14181d;
-    margin: 0 0 6px;
-}
-
-.leyenda-qr {
-    font-size: 9pt;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    color: #14181d;
-    margin: 6px 0 0;
-}
-
-.leyenda-qr .nota {
-    display: block;
-    font-size: 7pt;
-    font-weight: normal;
-    color: #555;
-    letter-spacing: 0;
-}
-
 /* ── Emisor y cliente ──────────────────────────────────────────────── */
 
 .datos-partes {
@@ -299,8 +248,7 @@ table.totales tr.total-final td {
  * A5 · hoja estrecha
  *
  * Los 148 mm de ancho dejan 120 mm imprimibles. Es el mismo problema que
- * resuelve .hoja-estrecha en el visor y con la misma escala: se comprime todo
- * MENOS el QR, cuyos 30 mm son el mínimo del art. 21 de la Orden HAC/1177/2024.
+ * resuelve .hoja-estrecha en el visor y con la misma escala: se comprime todo.
  * La cabecera pasa a dos filas; eso lo decide la plantilla, no esta hoja.
  * ══════════════════════════════════════════════════════════════════════ */
 
@@ -323,71 +271,13 @@ body.a5 .c-emisor h1 {
     font-size: 18.4px;             /* @token --titulo-emisor */
 }
 
-/* En A5 el número comparte fila con el QR y va a la izquierda. */
+/* En A5 el número va a la izquierda. */
 body.a5 .c-datos {
     text-align: left;
 }
 
 body.a5 .c-datos h2 {
     font-size: 16px;               /* @token --titulo-numero */
-}
-
-/*
- * DIVERGENCIA DELIBERADA con el visor, la única de esta hoja.
- *
- * En pantalla el A5 baja el QR a 30 mm y su zona de silencio a 2 mm porque allí
- * se pelea por cada milímetro: el documento mide 164 de los 182 imprimibles y
- * sin ese recorte no cabía en un folio. El PDF no tiene ese problema —le sobran
- * unos 45 mm— y a cambio 30 mm resultó ser frágil: medido sobre el PDF ya
- * generado, un QR de 30 mm solo se decodifica con un lector tolerante
- * (TRY_HARDER), mientras que el de 35 mm se lee a la primera de 150 a 600 dpi.
- *
- * Los dos tamaños cumplen el art. 21 (30-40 mm), así que se elige el que menos
- * depende de la calidad del lector. Por eso aquí NO hay marca @token: el test de
- * divergencia tiene que dejar pasar esta diferencia, y la deja porque no la
- * busca.
- */
-body.a5 .bloque-qr {
-    padding: 6mm;
-    text-align: left;
-}
-
-body.a5 .bloque-qr img {
-    width: 35mm;
-    height: 35mm;
-}
-
-/* Las leyendas dejan de ir encima y debajo del código y pasan a su derecha:
-   son los 17 mm de alto que le faltan al A5 para caber en un folio. */
-/*
- * La celda del QR deja de ceñirse a su contenido: con el «width: 1%» que usa el
- * A4 la columna de los textos se quedaba sin sitio y «QR TRIBUTARIO:» salía
- * partido en dos líneas encima de «VERI*FACTU». Aquí sobra ancho —el bloque
- * entero ocupa unos 72 de los 120 mm— así que se reparte.
- */
-body.a5 .c-qr {
-    width: auto;
-}
-
-body.a5 .qr-tabla td {
-    vertical-align: middle;
-    padding: 0;
-}
-
-body.a5 .qr-tabla .qr-textos {
-    width: 40mm;
-    padding-left: 2mm;
-    text-align: left;
-}
-
-body.a5 .rotulo-qr,
-body.a5 .leyenda-qr {
-    margin: 0;
-}
-
-/* El rótulo en una sola línea: partido pierde el sentido de ser un rótulo. */
-body.a5 .rotulo-qr {
-    white-space: nowrap;
 }
 
 body.a5 .datos-partes {

@@ -92,7 +92,6 @@ class AccesoSinSesionTests {
 				"/emisor/logo",
 				"/factura/buscar",
 				"/factura/trimestral",
-				"/verifactu/qr/1",
 				"/auth/yo",
 				"/factura-imprimir.html"
 		};
