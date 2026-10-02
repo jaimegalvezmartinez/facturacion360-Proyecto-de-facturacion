@@ -63,9 +63,10 @@ Solo tres cosas, y están marcadas como abiertas en `ConfiguracionSeguridad`:
 - Los estáticos: `js/**`, `css/**`, `img/**` y las hojas sueltas
 - `POST /auth/login`, `POST /auth/registro` y `GET /auth/csrf`
 
-**Todo lo demás exige sesión**: las cinco pantallas (inicio, clientes, facturas, perfil y
-ayuda), la API entera (`/cliente`, `/factura`, `/emisor`), los PDF, y también
-la documentación de Swagger.
+**Todo lo demás exige sesión**: las pantallas (inicio, clientes, facturas, perfil, ayuda, mi
+cuenta y el panel de usuarios), la API entera (`/cliente`, `/factura`, `/emisor`,
+`/usuarios`), los PDF, y también la documentación de Swagger. El panel además exige ser
+administrador: tiene su propia regla.
 
 La regla general es `anyRequest().authenticated()`: una pantalla nueva nace protegida, y para
 abrirla hay que hacer algo a propósito. Ese es el motivo de que la lista de lo abierto sea
@@ -93,20 +94,109 @@ resto de errores del proyecto, con el motivo en `detail`.
 | Ver el perfil de la empresa | Sí | Sí |
 | **Borrar clientes** (`DELETE /cliente/{id}`) | Sí | **No** (403) |
 | **Cambiar los datos del emisor** (`PUT /emisor`) | Sí | **No** (403) |
+| **El panel de usuarios** (`/usuarios.html` y `/usuarios/**`) | Sí | **No** (403) |
 
-Las dos operaciones restringidas son las que no se pueden deshacer: borrar un cliente, y tocar
-la razón social, el NIF y el domicilio que salen impresos en las facturas.
+Las tres operaciones restringidas son las que no se pueden deshacer, o las que dan el control
+de la aplicación: borrar un cliente, tocar la razón social, el NIF y el domicilio que salen
+impresos en las facturas, y administrar las cuentas.
 
-En la pantalla, un USUARIO no ve el enlace "Mi Perfil" ni el botón de la papelera. Eso es
-comodidad, **no protección**: si alguien quita el `data-solo-admin` con el inspector, el botón
-vuelve a aparecer y el servidor lo rechaza con un 403.
+En la pantalla, un USUARIO no ve el enlace "Mi Perfil", ni el de "Usuarios", ni el botón de la
+papelera. Eso es comodidad, **no protección**: si alguien quita el `data-solo-admin` con el
+inspector, el enlace vuelve a aparecer y el servidor lo rechaza con un 403. Las dos cosas —la
+página del panel y su API— están en la misma regla: si `usuarios.html` se quedara fuera, caería
+en la regla general de "tener sesión" y cualquier USUARIO podría abrirla entera.
+
+### El panel de administración de cuentas
+
+Desde el menú, en **Usuarios** (`usuarios.html`). Es la tabla de las cuentas, con lo que se
+puede hacer con cada una:
+
+| Acción | Endpoint | Qué hace |
+|---|---|---|
+| Ver la lista | `GET /usuarios` | Todas las cuentas con su rol, su estado y sus fechas |
+| Dar de alta | `POST /usuarios` | Crea una cuenta **con el rol que se elija** |
+| Editar | `PUT /usuarios/{id}` | Cambia el nombre, el rol y si queda activa |
+| Poner contraseña | `PUT /usuarios/{id}/clave` | Le pone una contraseña nueva, sin pedir la anterior |
+| Borrar | `DELETE /usuarios/{id}` | Elimina la cuenta, previa confirmación |
+
+```json
+POST /usuarios
+{ "usuario": "nombre", "clave": "...", "nombre": "Nombre y apellidos", "rol": "ADMIN" }
+
+PUT /usuarios/3
+{ "nombre": "Nombre y apellidos", "rol": "USUARIO", "activo": true }
+
+PUT /usuarios/3/clave
+{ "nueva": "..." }
+
+DELETE /usuarios/3
+{ "clave": "la contraseña del administrador que está dentro" }
+```
+
+Cinco cosas que conviene tener presentes:
+
+1. **El nombre de usuario no se puede cambiar.** Es la clave con la que esa persona entra y con
+   la que `UsuariosDetailsService` la busca. Para renombrar a alguien hay que darle un nombre
+   nuevo en el alta y desactivar la cuenta vieja.
+2. **El registro público sigue creando USUARIO.** `POST /auth/registro` no tiene campo de rol y
+   no lo lee: la única forma de crear un ADMIN por la API es `POST /usuarios`, que está cerrado
+   con `ROLE_ADMIN`.
+3. **La contraseña se guarda hasheada con BCrypt**, con su sal nueva, y no sale nunca por la
+   API: el DTO de salida no tiene ningún campo donde escribirla. La que se pone desde aquí está
+   en claro solo hasta que la hashea el servicio.
+4. **Cambiar la contraseña de otro no pide la anterior.** Quien está dentro ya ha demostrado ser
+   administrador con su propia sesión, y esto existe justamente para abrirle la cuenta a quien
+   la ha perdido. Para cambiarte la tuya, `Mi cuenta` (`PUT /auth/clave`) sí la pide. El borrado
+   sí pide una contraseña, pero es la del que borra: mira más abajo.
+5. **No se puede dejar la aplicación sin administradores.** Si el cambio bajaría de rol o
+   desactivaría a la última cuenta con permisos de ADMIN, se responde un 409 y no se toca nada.
+   Un panel desde el que uno mismo se puede quedar fuera es un panel del que hay que salir con
+   un `UPDATE` en la base de datos.
+
+### El borrado pide la contraseña de quien borra
+
+Es lo único que separa «estoy delante del teclado» de «he dejado el navegador abierto»: con la
+sesión sola, cualquiera que se sentara en ese equipo podría borrar cuentas de la aplicación. Por
+eso `DELETE /usuarios/{id}` lleva en el cuerpo la contraseña **del administrador que está
+haciendo el borrado**, no la de la cuenta que se va a borrar. Nadie tiene por qué saber la de
+otra persona, y lo que se comprueba es lo primero, no lo segundo.
+
+Tres reglas más, todas en el servidor:
+
+- **No se puede borrar la propia cuenta** (409). Quien lo hace se queda sin sesión en el mismo
+  instante, y si además era el último administrador, fuera del panel. Para dejar tu cuenta,
+  pídeselo a otro.
+- **No se borra sin la contraseña correcta** (400). Un 400 y no un 401 porque la sesión es
+  válida: lo que está mal es lo que se ha escrito en el formulario de confirmación.
+- **La sesión de una cuenta borrada no se cae.** Ni la del propio administrador ni, si la
+  tuviera abierta, la de la cuenta que se acaba de borrar. Es el mismo límite que el cambio de
+  rol: Spring copia los permisos a la sesión al entrar y no vuelve a mirar la base de datos
+  hasta la siguiente entrada. Para dejar de entrar sin borrar, desactiva la cuenta; para echar
+  del todo a alguien que tenga una sesión abierta, hay que cerrar además esa sesión desde
+  fuera.
+
+Y una diferencia entre las dos formas de quitar a alguien, que no es la misma:
+
+| | Desactivar (`activo = false`) | Borrar |
+|---|---|---|
+| Puede volver a entrar | No, hasta que se vuelva a activar | No |
+| Libera el nombre de usuario | No | **Sí** |
+| Conserva las fechas de alta y último acceso | Sí | No |
+| Se puede deshacer desde el panel | Sí | No |
+
+Y un detalle de las sesiones que conviene saber: cambiar el rol de una cuenta **no cambia los
+permisos de la sesión que esa persona tiene abierta**. Al entrar, Spring copia el rol a la
+autenticación y a partir de ahí es lo que manda. Subir a alguien a ADMIN surte efecto la
+próxima vez que entre, y bajarle el rol también. Es preferible a invalidar la sesión entera en
+cada cambio, que echaría a la gente de la aplicación a mitad de un trabajo.
 
 ### Dar de alta cuentas
 
+- Desde el panel de administración, que es lo que se usa en cuanto la aplicación está en marcha.
 - Desde la propia pantalla de acceso, con el botón "Crear cuenta" (`POST /auth/registro`).
   **Todas las cuentas nuevas nacen con rol USUARIO**, porque ese endpoint no lee ningún campo
   de rol: no hay forma de pedir un ADMIN por la API ni por error ni a propósito.
-- Con un `UPDATE` para cambiar un rol:
+- Con un `UPDATE` para cambiar un rol o una contraseña:
   ```sql
   UPDATE usuarios SET rol = 'ADMIN' WHERE usuario = 'nombre';
   ```
@@ -159,14 +249,19 @@ una cuenta (con permisos de USUARIO) sin que nadie se entere.
 mvn test
 ```
 
-Dos clases, y levantan la aplicación entera contra una base de datos H2 en memoria (la real
-sigue siendo MySQL; H2 solo se usa en test):
+Dos clases de puerta y una de las cuentas, y levantan la aplicación entera contra una base de
+datos H2 en memoria (la real sigue siendo MySQL; H2 solo se usa en test):
 
 - `AccesoSinSesionTests` — la puerta: qué se puede ver sin sesión, qué salta a `login`, qué
   devuelve un 403, y que sin token de CSRF no se escribe nada.
 - `AutenticacionTests` — la llave: entrar bien y entrar mal, cuentas desactivadas, el registro,
   que no se pueda pedir el rol ADMIN, el cierre de sesión y el cambio de contraseña (que se
   guarda hasheada, que la vieja deja de servir y que la actual equivocada no cambia nada).
+- `PanelUsuariosTests` — el panel de administración: que sin sesión sea un 401 y con un USUARIO
+  un 403 (en la API y en la página), que un ADMIN pueda dar de alta cuentas con el rol que elija,
+  cambiar roles y estados, poner contraseñas y borrar, que el borrado exija la contraseña del que
+  borra y no se pueda hacer uno mismo, y que no se pueda dejar la aplicación sin
+  administradores.
 
 Ninguno falsea la autenticación con mocks: los tests de la puerta hacen el login de verdad
 contra `POST /auth/login`, porque si el login se rompiera tienen que enterarse.
@@ -203,10 +298,14 @@ seguridad/PuntoEntradaNoAutenticada.java Qué se responde cuando no hay sesión 
 seguridad/AccesoDenegado.java            Qué se responde cuando hay sesión pero falta permiso
 controller/AuthController.java           /auth/login, /auth/registro, /auth/yo, /auth/csrf
                                         y /auth/clave (cambio de contraseña)
-service/UsuarioService.java              Da de alta cuentas (hashea la contraseña)
+controller/UsuarioAdminController.java   El panel: /usuarios, /usuarios/{id},
+                                        /usuarios/{id}/clave y DELETE /usuarios/{id}
+service/UsuarioService.java              Da de alta cuentas (hashea la contraseña), las lista
+                                        y las modifica
 repository/UsuarioRepositoryJdbcImpl.java  Acceso a la tabla usuarios
 static/login.html, static/js/login.js    La pantalla de acceso y su alta
 static/cuenta.html, static/js/cuenta.js  "Mi cuenta": datos de la sesión y cambio de clave
+static/usuarios.html, static/js/usuarios.js  El panel de administración de cuentas
 static/js/seguridad.js                   Token de CSRF, salto al login y cierre de sesión
 static/js/sesion.js                      El botón "Salir" y esconder lo de ADMIN
 ```

@@ -6,8 +6,11 @@
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/controller/FacturaPdfController.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/controller/ManejadorExcepciones.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/controller/ObjectMapper.java
-/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/controller/VerifactuQrController.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/controller/UsuarioAdminController.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/AltaAdminRequest.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/BorradoUsuarioRequest.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/CambioClaveRequest.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/ClaveAdminRequest.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/ClaveDesglose.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/Cliente.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/ClienteFactura.java
@@ -20,6 +23,7 @@
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/CsrfResponse.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/DesgloseImpositivo.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/DetalleFactura.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/EdicionUsuarioRequest.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/Emisor.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/Factura.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/FacturaRequest.java
@@ -30,6 +34,7 @@
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/Rol.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/SugerenciaConcepto.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/Usuario.java
+/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/UsuarioAdminResponse.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/dto/UsuarioResponse.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/pdf/FacturaPdfService.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/pdf/FormateadorPdf.java
@@ -64,6 +69,3 @@
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/service/UsuarioServiceImpl.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/validacion/NifCif.java
 /root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/validacion/NifCifValidador.java
-/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/verifactu/huella/CadenaCanonica.java
-/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/verifactu/huella/CalculadorHuella.java
-/root/git/facturacion360-Proyecto-de-facturacion/facturacion360/src/main/java/edu/xtd/facturacion360/verifactu/qr/GeneradorQr.java

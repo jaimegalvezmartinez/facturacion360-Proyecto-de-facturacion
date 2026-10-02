@@ -47,14 +47,25 @@ import jakarta.servlet.http.HttpServletResponse;
  * exigen sesión iniciada.</p>
  *
  * <h2>Qué decide el rol</h2>
- * <p>Solo dos operaciones, y las dos por una misma razón: son las que tocan datos que no se
- * pueden recuperar:</p>
+ * <p>Tres conjuntos de operaciones, y las tres por una misma razón: son las que tocan cosas que
+ * no se pueden recuperar o que dan el control de la aplicación.</p>
  * <ul>
  *   <li>{@code DELETE /cliente/{id}} → ADMIN. Borrar no se puede deshacer.</li>
  *   <li>{@code PUT /emisor} → ADMIN. Es la razón social, el NIF y el domicilio que salen
  *       impresos en las facturas: no es un dato cualquiera de un perfil, es un dato
  *       fiscales.</li>
+ *   <li>{@code /usuarios**, /usuarios y /usuarios.html} → ADMIN. Es el panel de
+ *       administración de cuentas: quién puede entrar, con qué rol y con qué contraseña. Un
+ *       USUARIO que llegara a verlo podría darle permisos de administrador a una cuenta que se
+ *       hubiera creado él mismo, y a partir de ahí ya no habría ningún filtro que lo
+ *       detuviera. El borrado de cuentas está en la misma línea, sin método: es la operación
+ *       que menos puede quedarse en la de "tener sesión".</li>
  * </ul>
+ * <p>La regla del panel no lleva método, a diferencia de las otras dos: allí se lee, se crea,
+ * se modifica y se borra, y separar esas operaciones en cuatro líneas solo daría cuatro sitios
+ * donde olvidarse una. La página {@code usuarios.html} va en la misma línea que su API porque,
+ * si no, caería en {@code anyRequest().authenticated()} y un USUARIO podría abrir el panel
+ * entero aunque la API le devolviera un 403.</p>
  *
  * <h2>Por qué no hay login por formulario de Spring</h2>
  * <p>El login es {@code POST /auth/login}, un endpoint JSON de este proyecto, porque todas las
@@ -171,6 +182,22 @@ public class ConfiguracionSeguridad {
 						// evaluarse: el borrado lo haría cualquier USUARIO.
 						.requestMatchers(HttpMethod.DELETE, "/cliente/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/emisor", "/emisor/**").hasRole("ADMIN")
+
+						// El panel de usuarios: la página y la API, en la misma línea. Sin
+						// método, porque aquí se lee, se crea, se modifica y se borra; ponerlo
+						// por método obligaría a repetir esta línea cinco veces y una de ellas
+						// se olvidaría. Es el borrado lo que no conviene dejar fuera: con el
+						// DELETE en una línea y el resto en la de "tener sesión", el panel
+						// sería un sitio donde cualquier USUARIO puede entrar pero no puede
+						// tocar nada, que es peor que ninguna de las dos cosas.
+						//
+						// "/usuarios.html" va dentro a propósito. Si se dejara fuera, caería en
+						// la regla general de abajo, que solo pide tener sesión: cualquier
+						// USUARIO vería el panel entero (que luego no le respondería el 403 de
+						// la API, pero vería la lista de cuentas y los formularios, que es
+						// bastante más de lo que le toca).
+						.requestMatchers("/usuarios", "/usuarios/**", "/usuarios.html")
+						.hasRole("ADMIN")
 
 						.requestMatchers(ABIERTAS).permitAll()
 						.requestMatchers(ESTATICOS).permitAll()

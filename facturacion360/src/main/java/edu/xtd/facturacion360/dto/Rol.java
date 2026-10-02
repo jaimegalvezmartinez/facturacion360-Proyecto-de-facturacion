@@ -26,11 +26,16 @@ public enum Rol {
 	 *   <li>Borrar clientes ({@code DELETE /cliente/{id}}).</li>
 	 *   <li>Modificar los datos del emisor ({@code PUT /emisor}), que son los que salen
 	 *       impresos en la factura.</li>
+	 *   <li>Administrar las cuentas: el panel ({@code usuarios.html} y {@code /usuarios/**}),
+	 *       que da de alta usuarios, les cambia el rol, los activa y desactiva y les pone una
+	 *       contraseña nueva.</li>
 	 * </ul>
 	 *
 	 * <p>Los usuarios de alta por el registro público (<code>POST /auth/registro</code>)
-	 * SIEMPRE se crean como USUARIO. El endpoint ni siquiera lee un campo de rol: así no
-	 * existe forma de pedir un ADMIN por la API, ni por error ni,a propósito.</p>
+	 * SIEMPRE se crean como USUARIO. Ese endpoint ni siquiera lee un campo de rol: así no
+	 * existe forma de pedir un ADMIN por la API, ni por error ni a propósito. La <em>única</em>
+	 * puerta por la que nace un ADMIN es {@code POST /usuarios}, del panel, y esa está cerrada
+	 * con esta misma regla de rol.</p>
 	 */
 	ADMIN,
 

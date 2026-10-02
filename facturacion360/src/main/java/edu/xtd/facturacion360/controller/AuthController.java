@@ -234,8 +234,10 @@ public class AuthController {
 	 *
 	 * <p>La cuenta nace siempre con rol USUARIO: este endpoint no lee ningún campo de rol
 	 * porque no lo hay en {@link RegistroRequest}, y esa ausencia es la medida de seguridad.
-	 * Los ADMIN se crean a mano, con el script de {@code docu/migracion-usuarios.sql} o con un
-	 * UPDATE en la base de datos.</p>
+	 * Los ADMIN los crea un administrador desde el panel ({@code POST /usuarios}, cerrado con
+	 * {@code ROLE_ADMIN}); además del script de {@code docu/migracion-usuarios.sql} y del
+	 * UPDATE a mano, que siguen sirviendo para dejar la aplicación lista antes de que haya
+	 * ninguna cuenta.</p>
 	 *
 	 * @param registro usuario, contraseña y nombre de la persona
 	 * @return 201 con los datos de la cuenta creada, sin su hash

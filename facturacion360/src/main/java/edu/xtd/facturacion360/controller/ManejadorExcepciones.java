@@ -223,6 +223,66 @@ public class ManejadorExcepciones extends ResponseEntityExceptionHandler {
 	}
 
 	/**
+	 * El panel de administración ha pedido una cuenta que no existe.
+	 *
+	 * <p>Un 404 y no un 400: lo que no encaja no es lo que se ha enviado en el cuerpo, es el
+	 * identificador de la ruta, que apunta a una fila que no está. Es el mismo criterio que
+	 * aplica {@link #gestionarTipoQueNoEncaja} a los {@code @PathVariable} del resto de
+	 * controladores: mandar a quien depura al sitio donde está el problema, que aquí es la
+	 * base de datos.</p>
+	 *
+	 * @param excepcion la cuenta que no se ha encontrado
+	 * @return 404 diciendo qué identificador no existe
+	 */
+	@ExceptionHandler(UsuarioService.UsuarioNoEncontradoException.class)
+	public ProblemDetail gestionarUsuarioNoEncontrado(
+			UsuarioService.UsuarioNoEncontradoException excepcion) {
+		log.warn("El panel ha pedido modificar una cuenta que no existe");
+		return problema(HttpStatus.NOT_FOUND, excepcion.getMessage());
+	}
+
+	/**
+	 * El panel de administración ha intentado dejar la aplicación sin administradores.
+	 *
+	 * <p>Un 409 y no un 400, aunque lo que se ha enviado no sea válido: el identificador de la
+	 * ruta sí existe y el cuerpo sí tiene los datos correctos. Lo que hay es un
+	 * <em>conflicto con el estado actual</em> de la aplicación —no hay otro ADMIN con el que
+	 * seguir—, que es lo que un 409 quiere decir. Además, un 400 dejaría la puerta abierta a
+	 * "reinténtalo": reintentar es exactamente lo que no va a funcionar nunca.</p>
+	 *
+	 * <p>Sin este manejador caería en el genérico de abajo y saldría como un 500, que además de
+	 * no ser verdad obligaría a ir a mirar el log para descubrir que no era un fallo del
+	 * servidor sino una regla del panel.</p>
+	 *
+	 * @param excepcion el rechazo del servicio, ya traducido
+	 * @return 409 explicando que no se puede quedar sin administradores
+	 */
+	@ExceptionHandler(UsuarioService.UsuarioInalterableException.class)
+	public ProblemDetail gestionarUsuarioInalterable(
+			UsuarioService.UsuarioInalterableException excepcion) {
+		log.warn("Se ha rechazado un cambio que dejaría la aplicación sin administradores");
+		return problema(HttpStatus.CONFLICT, excepcion.getMessage());
+	}
+
+	/**
+	 * La contraseña de confirmación del borrado no es la de quien está dentro.
+	 *
+	 * <p>Un 400 y no un 401 por el mismo motivo que en
+	 * {@link #gestionarClaveActualIncorrecta}: la sesión es válida —si no, la petición ni
+	 * siquiera habría llegado al servicio—, lo que está mal es lo que se ha escrito en el
+	 * formulario de confirmación.</p>
+	 *
+	 * @param excepcion el rechazo del servicio, ya traducido
+	 * @return 400 diciendo que la contraseña no es la correcta
+	 */
+	@ExceptionHandler(UsuarioService.ClaveConfirmacionIncorrectaException.class)
+	public ProblemDetail gestionarClaveConfirmacionIncorrecta(
+			UsuarioService.ClaveConfirmacionIncorrectaException excepcion) {
+		log.warn("Borrado de una cuenta rechazado: la contraseña de confirmación no es correcta");
+		return problema(HttpStatus.BAD_REQUEST, excepcion.getMessage());
+	}
+
+	/**
 	 * Gestiona el error que se produce cuando intentamos guardar un dato que ya existe.
 	 *
 	 * @param excepcion excepción producida por tener un dato duplicado

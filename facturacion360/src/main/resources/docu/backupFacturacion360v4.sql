@@ -207,7 +207,7 @@ VALUES ('1', 'Mi Empresa S.L', 'A12345678', 'Calle Mayor 15', 'miempresa@test.es
 INSERT INTO `bd_facturacion`.`usuarios`
 (`usuario`, `clave_hash`, `nombre`, `rol`, `activo`)
 VALUES
-('admin', '$2a$10$XLknJReh.BEubHm2F1uYjeV16cnuqAcvJIkT5ozT..x6bwhSEicdu', 'Administrador', 'ADMIN', 1),
+('adminsite', '$2a$10$XLknJReh.BEubHm2F1uYjeV16cnuqAcvJIkT5ozT..x6bwhSEicdu', 'Administrador', 'ADMIN', 1),
 ('datos', '$2a$10$XLknJReh.BEubHm2F1uYjeV16cnuqAcvJIkT5ozT..x6bwhSEicdu', 'Usuario de pruebas', 'USUARIO', 1);
 
 -- Contraseña de las dos cuentas de arriba: CambiarYa.2026

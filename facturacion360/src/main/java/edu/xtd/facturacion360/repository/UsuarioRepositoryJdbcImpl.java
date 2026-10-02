@@ -2,12 +2,14 @@ package edu.xtd.facturacion360.repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -29,38 +31,91 @@ public class UsuarioRepositoryJdbcImpl implements UsuarioRepository {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
+	/**
+	 * Las columnas que lee el {@link RowMapper}, tal cual van en el SELECT.
+	 *
+	 * <p>Está en una constante y no repetida en cada consulta porque el mapper las nombra una
+	 * por una: si el SELECT y el mapper dejaran de coincidir, el síntoma sería un
+	 * {@code SQLException} diciendo que no existe tal columna, en la consulta equivocada, y no
+	 * un aviso de que la lista de campos se quedó corta.</p>
+	 */
+	private static final String COLUMNAS = """
+				`idusuario`,
+				`usuario`,
+				`clave_hash`,
+				`nombre`,
+				`rol`,
+				`activo`,
+				`fecha_alta`,
+				`ultimo_acceso`
+			""";
+
+	/**
+	 * Lee una fila de {@code usuarios}.
+	 *
+	 * <p>Se declara una vez y se reutiliza en las tres consultas, porque las tres leen las mismas
+	 * ocho columnas y el mapa es idéntico. Duplicarlo tres veces era una forma de que un día
+	 * añadiera una columna a un SELECT y no a los otros dos.</p>
+	 *
+	 * <p>Los dos {@code getTimestamp} se llaman dos veces cada uno porque el driver devuelve un
+	 * {@code java.sql.Timestamp} y un {@code Optional} no es un {@code LocalDateTime} vacío: hay
+	 * que comprobar el nulo a mano. Es la parte menos elegante de JDBC y no tiene arreglo.</p>
+	 */
+	private static final RowMapper<Usuario> MAPEADOR = (rs, fila) -> new Usuario(
+			rs.getInt("idusuario"),
+			rs.getString("usuario"),
+			rs.getString("clave_hash"),
+			rs.getString("nombre"),
+			Rol.de(rs.getString("rol")),
+			rs.getBoolean("activo"),
+			rs.getTimestamp("fecha_alta") == null
+					? null
+					: rs.getTimestamp("fecha_alta").toLocalDateTime(),
+			rs.getTimestamp("ultimo_acceso") == null
+					? null
+					: rs.getTimestamp("ultimo_acceso").toLocalDateTime());
+
 	@Override
 	public Optional<Usuario> findPorUsuario(String usuario) {
 
 		String sql = """
-				SELECT
-					`idusuario`,
-					`usuario`,
-					`clave_hash`,
-					`nombre`,
-					`rol`,
-					`activo`,
-					`fecha_alta`,
-					`ultimo_acceso`
+				SELECT %s
 				FROM `bd_facturacion`.`usuarios`
 				WHERE `usuario` = ?
-				""";
+				""".formatted(COLUMNAS);
 
 		return jdbcTemplate
-				.query(sql, (rs, rowNum) -> new Usuario(
-						rs.getInt("idusuario"),
-						rs.getString("usuario"),
-						rs.getString("clave_hash"),
-						rs.getString("nombre"),
-						Rol.de(rs.getString("rol")),
-						rs.getBoolean("activo"),
-						rs.getTimestamp("fecha_alta") == null
-								? null
-								: rs.getTimestamp("fecha_alta").toLocalDateTime(),
-						rs.getTimestamp("ultimo_acceso") == null
-								? null
-								: rs.getTimestamp("ultimo_acceso").toLocalDateTime()
-				), usuario)
+				.query(sql, MAPEADOR, usuario)
+				.stream()
+				.findFirst();
+	}
+
+	@Override
+	public List<Usuario> findTodos() {
+
+		// El ORDER BY va por idusuario y no por nombre: la lista se enseña en orden de alta, que
+		// es el orden en que las cuentas han ido apareciendo, y el que quiera otra cosa lo
+		// ordena en el navegador sin volver a preguntárselo al servidor.
+		String sql = """
+				SELECT %s
+				FROM `bd_facturacion`.`usuarios`
+				ORDER BY `idusuario` ASC
+				""".formatted(COLUMNAS);
+
+		return jdbcTemplate.query(sql, MAPEADOR);
+	}
+
+	@Override
+	public Optional<Usuario> findPorId(int idUsuario) {
+
+		String sql = """
+				SELECT %s
+				FROM `bd_facturacion`.`usuarios`
+				WHERE `idusuario` = ?
+				""".formatted(COLUMNAS);
+
+		return jdbcTemplate
+				.query(sql, MAPEADOR, idUsuario)
 				.stream()
 				.findFirst();
 	}
@@ -163,6 +218,36 @@ public class UsuarioRepositoryJdbcImpl implements UsuarioRepository {
 				""";
 
 		jdbcTemplate.update(sql, claveHash, idUsuario);
+	}
+
+	@Override
+	public void actualizar(int idUsuario, String nombre, Rol rol, boolean activo) {
+
+		// Solo tres columnas. Ni clave_hash ni usuario aparecen en el SET, y no por descuido:
+		// son las dos cosas que se cambian por su propio camino, una porque necesita hashearse y
+		// la otra porque es la clave con la que esa persona entra. Meterlas aquí sería una forma
+		// de que una edición de nombre acabara con la contraseña de alguien en blanco.
+		String sql = """
+				UPDATE `bd_facturacion`.`usuarios`
+				SET `nombre` = ?, `rol` = ?, `activo` = ?
+				WHERE `idusuario` = ?
+				""";
+
+		jdbcTemplate.update(sql, nombre, rol.name(), activo, idUsuario);
+	}
+
+	@Override
+	public void borrar(int idUsuario) {
+
+		// Un DELETE de una sola fila por identificador, y no por nombre de usuario: el
+		// identificador es lo que trae la ruta y es lo que no se puede cambiar desde la
+		// aplicación, así que la fila que se borra es exactamente la que se ha pedido.
+		String sql = """
+				DELETE FROM `bd_facturacion`.`usuarios`
+				WHERE `idusuario` = ?
+				""";
+
+		jdbcTemplate.update(sql, idUsuario);
 	}
 
 }
